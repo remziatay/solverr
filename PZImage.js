@@ -1,23 +1,8 @@
 export class PZImage {
-  constructor (pzCanvas, conn, file) {
+  constructor (pzCanvas, conn) {
     this.pzCanvas = pzCanvas
     this.conn = conn
-
     this.end = (evt) => this.finish(evt)
-
-    if (!file) return
-    const reader = new FileReader()
-    reader.onloadend = () => {
-      this.base64Image = reader.result
-      this.oldMouseDown = pzCanvas.canvas.onmousedown
-      this.oldMouseMove = pzCanvas.canvas.onmousemove
-      this.oldMouseUp = pzCanvas.canvas.onmouseup
-
-      this.image = new Image()
-      this.image.onload = () => this.onImageLoad()
-      this.image.src = URL.createObjectURL(file)
-    }
-    reader.readAsDataURL(file)
   }
 
   from ({ base64Image, x, y, scale }) {
@@ -31,6 +16,21 @@ export class PZImage {
       this.pzCanvas.refresh()
     }
     this.image.src = base64Image
+  }
+
+  start (file) {
+    const reader = new FileReader()
+    reader.onloadend = () => {
+      this.base64Image = reader.result
+      this.oldMouseDown = this.pzCanvas.canvas.onmousedown
+      this.oldMouseMove = this.pzCanvas.canvas.onmousemove
+      this.oldMouseUp = this.pzCanvas.canvas.onmouseup
+
+      this.image = new Image()
+      this.image.onload = () => this.onImageLoad()
+      this.image.src = URL.createObjectURL(file)
+    }
+    reader.readAsDataURL(file)
   }
 
   onImageLoad () {

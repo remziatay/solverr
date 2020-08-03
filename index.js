@@ -150,7 +150,7 @@ pz.canvas.onmouseup = evt => {
 inputImage.onchange = function () {
   const file = inputImage.files[0]
   if (!file.type.match(/image-*/)) return
-  PZImage(pz, conn, file)
+  new PZImage(pz, conn).start(file)
 }
 
 clearButton.onclick = () => {
