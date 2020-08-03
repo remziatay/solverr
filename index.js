@@ -5,6 +5,7 @@ import { PZPath } from './PZPath.js'
 import { PZImage } from './PZImage.js'
 
 const inputImage = document.getElementById('input-image')
+const clearButton = document.getElementById('clear-button')
 const canvasDiv = document.getElementById('canvas-div')
 /** @type {CanvasRenderingContext2D} */
 const layerImage = document.getElementById('layer-image').getContext('2d')
@@ -87,6 +88,7 @@ peer.on('connection', connection => {
 function ondata (data) {
   if (data.type === 'path') new PZPath(pz, conn).from(data).finish()
   else if (data.type === 'image') new PZImage(pz, conn).from(data)
+  else if (data.type === 'clear') pz.clear()
 }
 
 let mode = 'edit' // edit or pan
@@ -151,6 +153,13 @@ inputImage.onchange = function () {
   const file = inputImage.files[0]
   if (!file.type.match(/image-*/)) return
   PZImage(pz, conn, file)
+}
+
+clearButton.onclick = () => {
+  pz.clear()
+  conn.send({
+    type: 'clear'
+  })
 }
 
 /*

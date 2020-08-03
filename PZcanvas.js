@@ -36,6 +36,23 @@ export class PZcanvas {
     }
   }
 
+  clear () {
+    const { width, height, area } = this
+    this.paths = []
+    this.unfinishedPath = null
+    this.scale = 1
+
+    this.refX = (width * (area - 1)) / 2
+    this.refY = (height * (area - 1)) / 2
+    this.panX = 0
+    this.panY = 0
+    this.centerX = (width * area) / 2
+    this.centerY = (height * area) / 2
+
+    this.update()
+    this.refresh()
+  }
+
   canvasToAddPoint (x, y) {
     const { refX, panX, refY, panY, scale } = this
     return { x: (x + refX - panX) / scale, y: (y + refY - panY) / scale }
