@@ -6,13 +6,15 @@ import { PZImage } from './PZImage.js'
 
 const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
+const status = document.getElementById('status-text')
+/*
 const canvasDiv = document.getElementById('canvas-div')
-/** @type {CanvasRenderingContext2D} */
 const layerImage = document.getElementById('layer-image').getContext('2d')
-/** @type {CanvasRenderingContext2D} */
 const layerStudent = document.getElementById('layer-student').getContext('2d')
-/** @type {CanvasRenderingContext2D} */
 const layerTeacher = document.getElementById('layer-teacher').getContext('2d')
+*/
+
+status.innerText = 'Connecting...'
 
 let name1, name2
 
@@ -25,7 +27,6 @@ if (window.location.hash) {
   // window.location.hash = name1 + name2;
   name1 = '6owmyzv313ihs1x9'
   name2 = 'r2368j2nlo14251b'
-  console.log(window.location.origin + '/#' + name2 + name1)
 }
 
 const peer = new Peer(name1, {
@@ -35,7 +36,7 @@ const peer = new Peer(name1, {
 })
 
 // const canvas = new Canvas([layerImage, layerStudent, layerTeacher]);
-
+/*
 function setSizes () {
   layerTeacher.canvas.width = layerStudent.canvas.width = layerImage.canvas.width =
     canvasDiv.offsetWidth
@@ -46,6 +47,7 @@ function setSizes () {
 setSizes()
 window.onscroll = setSizes
 window.onresize = setSizes
+*/
 
 const menu = new CircleContextMenu(200)
 menu.addButton('Pan', () => (mode = 'pan'))
@@ -53,16 +55,7 @@ menu.addButton('Draw', () => (mode = 'edit'))
 
 window.addEventListener('resize', () => menu.resize())
 
-/* const WIDTH = 500,
-  HEIGHT = 300,
-  AREA = 3;
-let panX = (WIDTH * (AREA - 1)) / 2,
-  panY = (HEIGHT * (AREA - 1)) / 2,
-  scale = 1; */
-
 const pz = new PZcanvas(900, 600, 3)
-document.body.appendChild(pz.canvas)
-pz.canvas.style.border = '1px solid green'
 
 // document.body.appendChild(pz.shadowCanvas);
 // pz.shadowCanvas.style.border = '2px dotted magenta';
@@ -72,18 +65,23 @@ peer.on('open', function (id) {
   console.log('My peer ID is: ' + id)
   if (window.location.hash) {
     conn = peer.connect(name2)
-    conn.on('open', function () {
-      console.log('connection established')
-      conn.on('data', ondata)
-    })
+    conn.on('open', () => connected())
+  } else {
+    const link = `${window.location.origin}${window.location.pathname}/#${name2}${name1}`
+    status.innerHTML = `Share link: <a href="${link}">${link}</a>`
   }
 })
 
-peer.on('connection', connection => {
+peer.on('connection', connection => connected(connection))
+
+function connected (connection) {
+  if (connection) conn = connection
+  status.innerText = 'Connected'
   console.log('connected to peer')
-  conn = connection
+  document.body.appendChild(pz.canvas)
+  pz.canvas.style.border = '1px solid green'
   conn.on('data', ondata)
-})
+}
 
 function ondata (data) {
   if (data.type === 'path') new PZPath(pz, conn).from(data).finish()
