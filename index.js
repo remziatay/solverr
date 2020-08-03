@@ -67,7 +67,7 @@ peer.on('open', function (id) {
     conn = peer.connect(name2)
     conn.on('open', () => connected())
   } else {
-    const link = `${window.location.origin}${window.location.pathname}/#${name2}${name1}`
+    const link = `${window.location.origin}${window.location.pathname.replace('//', '/')}#${name2}${name1}`
     status.innerHTML = `Share link: <a href="${link}">${link}</a>`
   }
 })
