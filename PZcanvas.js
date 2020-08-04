@@ -74,17 +74,20 @@ export class PZcanvas {
   }
 
   update () {
-    const { width, height, area, shadowCanvas, shadowCtx } = this
-    shadowCtx.save()
-    shadowCtx.setTransform(1, 0, 0, 1, 0, 0)
-    shadowCtx.translate(this.panX, this.panY)
-    shadowCtx.scale(this.scale, this.scale)
-    shadowCtx.lineWidth = 1 / this.scale
-    shadowCtx.clearRect(0, 0, shadowCanvas.width, shadowCanvas.height)
-    this.dose()
-    shadowCtx.strokeRect(0, 0, width * area, height * area)
-    this.paths.forEach((path) => path.draw())
-    shadowCtx.restore()
+    const { width, height, area, shadowCanvas, shadowCtx, panX, panY, scale } = this
+    requestAnimationFrame(() => {
+      shadowCtx.save()
+      shadowCtx.setTransform(1, 0, 0, 1, 0, 0)
+      shadowCtx.translate(panX, panY)
+      shadowCtx.scale(scale, scale)
+      shadowCtx.lineWidth = 1 / scale
+      shadowCtx.clearRect(0, 0, shadowCanvas.width, shadowCanvas.height)
+      this.dose()
+      shadowCtx.strokeRect(0, 0, width * area, height * area)
+      this.paths.forEach((path) => path.draw())
+      shadowCtx.restore()
+      this.refresh()
+    })
   }
 
   pan (dx, dy) {
@@ -126,37 +129,34 @@ export class PZcanvas {
   }
 
   zoom (scale, x, y) {
-    requestAnimationFrame(() => {
-      const { shadowCtx } = this
-      scale = this.trim(scale, 1 / (this.scale * this.area), 20 / this.scale)
-      if (scale === 1) return
-      let pt = this.real2canvas(x, y)
-      shadowCtx.scale(scale, scale)
-      shadowCtx.save()
-      const pt2 = this.real2canvas(x, y)
-      this.panX -= (pt2.x - pt.x) / this.scale
-      this.panY -= (pt2.y - pt.y) / this.scale
-      shadowCtx.translate(
-        -(pt2.x - pt.x) / this.scale,
-        -(pt2.y - pt.y) / this.scale
-      )
-      this.scale *= scale
-      pt = this.real2canvas(x, y)
-      this.refX = (this.width * (this.area - 1)) / 2
-      this.refY = (this.height * (this.area - 1)) / 2
-      pt = this.real2canvas(x, y)
-      shadowCtx.restore()
-      this.panX -= (pt2.x - pt.x) / this.scale
-      this.panY -= (pt2.y - pt.y) / this.scale
-      clearTimeout(this.zoomDebounceTimeout)
-      this.zoomDebounceTimeout = setTimeout(() => {
-        // panning and reversing so the overflow will be fixed
-        this.pan(1, 1)
-        this.pan(-1, -1)
-        this.update()
-        this.refresh()
-      }, 200)
-    })
+    const { shadowCtx } = this
+    scale = this.trim(scale, 1 / (this.scale * this.area), 20 / this.scale)
+    if (scale === 1) return
+    let pt = this.real2canvas(x, y)
+    shadowCtx.scale(scale, scale)
+    shadowCtx.save()
+    const pt2 = this.real2canvas(x, y)
+    this.panX -= (pt2.x - pt.x) / this.scale
+    this.panY -= (pt2.y - pt.y) / this.scale
+    shadowCtx.translate(
+      -(pt2.x - pt.x) / this.scale,
+      -(pt2.y - pt.y) / this.scale
+    )
+    this.scale *= scale
+    pt = this.real2canvas(x, y)
+    this.refX = (this.width * (this.area - 1)) / 2
+    this.refY = (this.height * (this.area - 1)) / 2
+    pt = this.real2canvas(x, y)
+    shadowCtx.restore()
+    this.panX -= (pt2.x - pt.x) / this.scale
+    this.panY -= (pt2.y - pt.y) / this.scale
+    clearTimeout(this.zoomDebounceTimeout)
+    this.zoomDebounceTimeout = setTimeout(() => {
+      // panning and reversing so the overflow will be fixed
+      this.pan(1, 1)
+      this.pan(-1, -1)
+      this.update()
+    }, 200)
   }
 
   fixOverFlow () {
