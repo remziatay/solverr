@@ -135,17 +135,21 @@ pz.canvas.onmouseup = evt => {
   if (!dragStart) return
   dragStart = false
   if (!dragging) {
-    const x = evt.offsetX
-    const y = evt.offsetY
     const zoom = evt.shiftKey ? 0.9 : 1.1
-    pz.zoom(zoom, x, y)
+    pz.zoom(zoom, evt.offsetX, evt.offsetY)
   } else if (mode === 'edit') {
     drawingPath.finish()
   }
   dragging = false
 }
 
-// const image = new Image();
+function handleScroll (evt) {
+  evt.preventDefault()
+  if (Math.abs(evt.deltaY) < 0.1) return
+  pz.zoom(1 - evt.deltaY / 10, evt.offsetX, evt.offsetY)
+}
+
+pz.canvas.addEventListener('wheel', handleScroll, false)
 
 inputImage.onchange = function () {
   const file = inputImage.files[0]

@@ -145,16 +145,17 @@ export class PZcanvas {
       this.refX = (this.width * (this.area - 1)) / 2
       this.refY = (this.height * (this.area - 1)) / 2
       pt = this.real2canvas(x, y)
+      shadowCtx.restore()
       this.panX -= (pt2.x - pt.x) / this.scale
       this.panY -= (pt2.y - pt.y) / this.scale
-      // shadowCtx.translate(-(pt2.x - pt.x) / this.scale, -(pt2.y - pt.y) / this.scale);
-      this.fixOverFlow()
-      this.update()
-      // panning and reversing so the overflow will be fixed
-      this.pan(1, 1)
-      this.pan(-1, -1)
-      this.refresh()
-      shadowCtx.restore()
+      clearTimeout(this.zoomDebounceTimeout)
+      this.zoomDebounceTimeout = setTimeout(() => {
+        // panning and reversing so the overflow will be fixed
+        this.pan(1, 1)
+        this.pan(-1, -1)
+        this.update()
+        this.refresh()
+      }, 200)
     })
   }
 
