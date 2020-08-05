@@ -129,6 +129,7 @@ export class PZcanvas {
   }
 
   zoom (scale, x, y) {
+    clearTimeout(this.zoomDebounceTimeout)
     const { shadowCtx } = this
     scale = this.trim(scale, 1 / (this.scale * this.area), 20 / this.scale)
     if (scale === 1) return
@@ -150,7 +151,6 @@ export class PZcanvas {
     shadowCtx.restore()
     this.panX -= (pt2.x - pt.x) / this.scale
     this.panY -= (pt2.y - pt.y) / this.scale
-    clearTimeout(this.zoomDebounceTimeout)
     this.zoomDebounceTimeout = setTimeout(() => {
       // panning and reversing so the overflow will be fixed
       this.pan(1, 1)
