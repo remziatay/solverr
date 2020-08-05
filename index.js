@@ -49,13 +49,27 @@ window.onscroll = setSizes
 window.onresize = setSizes
 */
 
-const menu = new CircleContextMenu(200)
-menu.addButton('Pan', () => (mode = 'pan'))
-menu.addButton('Draw', () => (mode = 'edit'))
-
 window.addEventListener('resize', () => menu.resize())
 
 const pz = new PZcanvas(900, 600, 3)
+const menu = new CircleContextMenu(200)
+menu.addButton('Pan', () => (mode = 'pan'))
+menu.addButton('Draw', () => {
+  mode = 'edit'
+  changeStrokeSize(0)
+})
+
+let strokeSize = 13
+function changeStrokeSize (change) {
+  strokeSize += change
+  strokeSize = Math.min(Math.max(strokeSize, 3), 128)
+  if (strokeSize < 5) {
+    pz.canvas.style.cursor = 'crosshair'
+    return
+  }
+  const svg = `<svg width="${strokeSize}" height="${strokeSize}" xmlns="http://www.w3.org/2000/svg"><circle r="${strokeSize / 2 - 1}" cy="${strokeSize / 2}" cx="${strokeSize / 2}" stroke-width="1.5" stroke="black" fill="none"/></svg>`
+  pz.canvas.style.cursor = `url('data:image/svg+xml;utf8,${svg}') ${strokeSize / 2} ${strokeSize / 2}, auto`
+}
 
 // document.body.appendChild(pz.shadowCanvas);
 // pz.shadowCanvas.style.border = '2px dotted magenta';
@@ -89,7 +103,7 @@ function ondata (data) {
   else if (data.type === 'clear') pz.clear()
 }
 
-let mode = 'edit' // edit or pan
+let mode = 'pan' // edit or pan
 let dragStart = false
 let dragging = false
 let drawingPath
@@ -143,8 +157,13 @@ pz.canvas.onmouseup = evt => {
   dragging = false
 }
 
+const strokeSizeStep = 5
 function handleScroll (evt) {
   evt.preventDefault()
+  if (evt.ctrlKey && mode === 'edit') {
+    changeStrokeSize(evt.deltaY < 0 ? strokeSizeStep : -strokeSizeStep)
+    return
+  }
   if (Math.abs(evt.deltaY) < 0.1) return
   pz.zoom(1 - evt.deltaY / 10, evt.offsetX, evt.offsetY)
 }
