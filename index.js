@@ -55,7 +55,7 @@ const pz = new PZcanvas(900, 600, 3)
 const menu = new CircleContextMenu(200)
 menu.addButton('Pan', () => {
   mode = 'pan'
-  pz.canvas.style.cursor = 'auto'
+  pz.canvas.style.cursor = 'grab'
 })
 menu.addButton('Draw', () => {
   mode = 'edit'
@@ -106,7 +106,9 @@ function ondata (data) {
   else if (data.type === 'clear') pz.clear()
 }
 
-let mode = 'pan' // edit or pan
+let mode = 'edit' // edit or pan
+if (mode === 'edit') changeStrokeSize(0)
+else if (mode === 'pan') pz.canvas.style.cursor = 'grab'
 let dragStart = false
 let dragging = false
 let drawingPath
@@ -115,8 +117,9 @@ pz.canvas.onmousedown = evt => {
   if (evt.buttons === 1) {
     dragStart = true
     dragging = false
-    drawingPath = new PZPath(pz, conn, strokeSize)
-  } else if (evt.buttons === 3) {
+    if (mode === 'edit') drawingPath = new PZPath(pz, conn, strokeSize)
+    else if (mode === 'pan') pz.canvas.style.cursor = 'grabbing'
+  } else if (evt.buttons === 3 && mode === 'edit') {
     // left and right click at the same time to cancel dragging
     dragStart = false
     dragging = false
@@ -149,7 +152,9 @@ pz.canvas.onmousemove = evt => {
 }
 
 pz.canvas.onmouseup = evt => {
-  if (!dragStart) return
+  console.log(evt.buttons, evt.button)
+  if (!dragStart || evt.button !== 0) return
+  if (mode === 'pan') pz.canvas.style.cursor = 'grab'
   dragStart = false
   if (!dragging) {
     const zoom = evt.shiftKey ? 0.9 : 1.1
