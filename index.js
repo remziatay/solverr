@@ -152,7 +152,6 @@ pz.canvas.onmousemove = evt => {
 }
 
 pz.canvas.onmouseup = evt => {
-  console.log(evt.buttons, evt.button)
   if (!dragStart || evt.button !== 0) return
   if (mode === 'pan') pz.canvas.style.cursor = 'grab'
   dragStart = false
@@ -168,12 +167,14 @@ pz.canvas.onmouseup = evt => {
 const strokeSizeStep = 5
 function handleScroll (evt) {
   evt.preventDefault()
+  const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
+
   if (evt.ctrlKey && mode === 'edit') {
     changeStrokeSize(evt.deltaY < 0 ? strokeSizeStep : -strokeSizeStep)
     return
   }
-  if (Math.abs(evt.deltaY) < 0.1) return
-  pz.zoom(1 - evt.deltaY / 10, evt.offsetX, evt.offsetY)
+  if (Math.abs(delta) < 0.1) return
+  pz.zoom(1 - delta / 10, evt.offsetX, evt.offsetY)
 }
 
 pz.canvas.addEventListener('wheel', handleScroll, false)
