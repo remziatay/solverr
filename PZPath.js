@@ -1,12 +1,11 @@
 export class PZPath {
-  constructor (pzCanvas, conn, x1, y1, x2, y2, width = 10, color = 'black') {
+  constructor (pzCanvas, conn, width = 10, color = 'black') {
     this.pzCanvas = pzCanvas
     this.conn = conn
-    this.width = width
+    this.width = width / pzCanvas.scale
     this.color = color
     this.path = new Path2D()
     this.points = []
-    if (y2 !== undefined) this.add(x1, y1, x2, y2)
   }
 
   from ({ path, width, color }) {

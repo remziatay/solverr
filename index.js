@@ -53,7 +53,10 @@ window.addEventListener('resize', () => menu.resize())
 
 const pz = new PZcanvas(900, 600, 3)
 const menu = new CircleContextMenu(200)
-menu.addButton('Pan', () => (mode = 'pan'))
+menu.addButton('Pan', () => {
+  mode = 'pan'
+  pz.canvas.style.cursor = 'auto'
+})
 menu.addButton('Draw', () => {
   mode = 'edit'
   changeStrokeSize(0)
@@ -112,7 +115,7 @@ pz.canvas.onmousedown = evt => {
   if (evt.buttons === 1) {
     dragStart = true
     dragging = false
-    drawingPath = new PZPath(pz, conn)
+    drawingPath = new PZPath(pz, conn, strokeSize)
   } else if (evt.buttons === 3) {
     // left and right click at the same time to cancel dragging
     dragStart = false
