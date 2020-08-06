@@ -164,6 +164,52 @@ pz.canvas.onmouseup = evt => {
   dragging = false
 }
 
+let lastTouch
+pz.canvas.addEventListener('touchstart', (evt) => {
+  // evt.preventDefault()
+  // evt.stopPropagation()
+  lastTouch = evt.touches[0]
+  if (evt.touches.length === 1) {
+    dragStart = true
+    dragging = false
+    if (mode === 'edit') drawingPath = new PZPath(pz, conn, strokeSize)
+  }
+}, false)
+
+pz.canvas.addEventListener('touchmove', (evt) => {
+  evt.preventDefault()
+  if (!dragStart) return
+  dragging = true
+  let x, y
+  const touch = evt.touches[0]
+  switch (mode) {
+    case 'edit': {
+      const rect = evt.target.getBoundingClientRect()
+      x = touch.clientX
+      y = touch.clientY
+      drawingPath.add(lastTouch.clientX - rect.left, lastTouch.clientY - rect.top, x - rect.left, y - rect.top)
+      break
+    }
+    case 'pan':
+      pz.pan(lastTouch.clientX - touch.clientX, lastTouch.clientY - touch.clientY)
+      break
+    default:
+      break
+  }
+  lastTouch = touch
+}, false)
+
+pz.canvas.addEventListener('touchend', (evt) => {
+  // evt.preventDefault()
+  // evt.stopPropagation()
+  if (!dragStart) return
+  dragStart = false
+  if (mode === 'edit') {
+    drawingPath.finish()
+  }
+  dragging = false
+}, false)
+
 const strokeSizeStep = 5
 function handleScroll (evt) {
   evt.preventDefault()
