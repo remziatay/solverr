@@ -6,6 +6,7 @@ export class CircleContextMenu {
     this.buttons = []
     this.buttonCount = 0
     this.extraSize = 50
+    this.visible = false
     this.initCanvas()
   }
 
@@ -31,12 +32,16 @@ export class CircleContextMenu {
     this.canvas.height = document.documentElement.clientHeight
   }
 
+  ontouchmove (evt) {
+    this.onmousemove(evt.touches[0])
+  }
+
   onmousemove (evt) {
     const oldChosen = this.chosen
     const r = this.r
 
-    const x = evt.offsetX - this.x
-    const y = evt.offsetY - this.y
+    const x = evt.clientX - this.x
+    const y = evt.clientY - this.y
 
     const deltaX = x - r
     const deltaY = r - y
@@ -149,6 +154,7 @@ export class CircleContextMenu {
   }
 
   show (x, y) {
+    this.visible = true
     this.x = x - this.r
     this.y = y - this.r
     this.ctx.setTransform(1, 0, 0, 1, this.x, this.y)
@@ -159,11 +165,11 @@ export class CircleContextMenu {
 
   hide () {
     this.canvas.style.display = 'none'
+    this.visible = false
   }
 
   choose () {
     this.hide()
-    if (this.chosen === undefined) return
-    this.buttons[this.chosen].func()
+    if (this.chosen !== undefined) { this.buttons[this.chosen].func() }
   }
 }

@@ -51,7 +51,7 @@ window.onresize = setSizes
 
 window.addEventListener('resize', () => menu.resize())
 
-const pz = new PZcanvas(900, 600, 3)
+const pz = new PZcanvas(600, 400, 4)
 const menu = new CircleContextMenu(200)
 menu.addButton('Pan', () => {
   mode = 'pan'
@@ -164,10 +164,16 @@ pz.canvas.onmouseup = evt => {
   dragging = false
 }
 
-let lastTouch
+const touchDuration = 500
+let touchTimer, lastTouch
+
 pz.canvas.addEventListener('touchstart', (evt) => {
-  // evt.preventDefault()
+  evt.preventDefault()
   // evt.stopPropagation()
+  touchTimer = setTimeout(() => {
+    menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
+    touchTimer = null
+  }, touchDuration)
   lastTouch = evt.touches[0]
   if (evt.touches.length === 1) {
     dragStart = true
@@ -178,10 +184,20 @@ pz.canvas.addEventListener('touchstart', (evt) => {
 
 pz.canvas.addEventListener('touchmove', (evt) => {
   evt.preventDefault()
+  const touch = evt.touches[0]
+  if (menu.visible) {
+    menu.ontouchmove(evt)
+    return
+  } else if (touchTimer) {
+    if ((lastTouch.clientX - touch.clientX) ** 2 + (lastTouch.clientY - touch.clientY) ** 2 > 9) {
+      clearTimeout(touchTimer)
+      touchTimer = null
+    } else return
+  }
+
   if (!dragStart) return
   dragging = true
   let x, y
-  const touch = evt.touches[0]
   switch (mode) {
     case 'edit': {
       const rect = evt.target.getBoundingClientRect()
@@ -200,8 +216,16 @@ pz.canvas.addEventListener('touchmove', (evt) => {
 }, false)
 
 pz.canvas.addEventListener('touchend', (evt) => {
-  // evt.preventDefault()
+  evt.preventDefault()
   // evt.stopPropagation()
+  if (menu.visible) {
+    menu.choose()
+    return
+  } else if (touchTimer) {
+    clearTimeout(touchTimer)
+    touchTimer = null
+  }
+
   if (!dragStart) return
   dragStart = false
   if (mode === 'edit') {
