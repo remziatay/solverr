@@ -188,14 +188,25 @@ function handleTwoFinger (evt) {
   const diffY2 = touch2.clientY - touchCache[index2].clientY
   let panX = 0
   let panY = 0
+  let zoomX = 0
+  let zoomY = 0
   if (diffX1 > 0 && diffX2 > 0) panX = -Math.min(diffX1, diffX2)
   else if (diffX1 < 0 && diffX2 < 0) panX = -Math.max(diffX1, diffX2)
+  else zoomX = Math.abs(diffX1) + Math.abs(diffX2)
+
   if (diffY1 > 0 && diffY2 > 0) panY = -Math.min(diffY1, diffY2)
   else if (diffY1 < 0 && diffY2 < 0) panY = -Math.max(diffY1, diffY2)
-  pz.pan(panX, panY)
+  else zoomY = Math.abs(diffY1) + Math.abs(diffY2)
 
-  const PINCH_THRESHHOLD = evt.target.clientWidth / 10
-  if (diffX1 >= PINCH_THRESHHOLD && diffX2 >= PINCH_THRESHHOLD) { evt.target.style.background = 'green' }
+  pz.pan(panX, panY)
+  const diff = (touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2 - ((touchCache[index1].clientX - touchCache[index2].clientX) ** 2 + (touchCache[index1].clientY - touchCache[index2].clientY) ** 2)
+
+  const zoom = (diff > 0 ? 1 : -1) * Math.hypot(zoomX, zoomY) * 0.01
+  if (Math.abs(zoom) >= 0.1) {
+    pz.zoom(1 + zoom, (touchCache[index1].clientX + touchCache[index2].clientX) / 2,
+      (touchCache[index1].clientY + touchCache[index2].clientY) / 2)
+  }
+
   touchCache.length = 0
   touchCache.push(touch1, touch2)
 }
