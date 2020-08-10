@@ -23,6 +23,14 @@ export class PZcanvas {
     this.shadowCanvas.height = height * area
     this.shadowCtx = this.shadowCanvas.getContext('2d')
     // this.shadowCtx.translate(this.refX, this.refY);
+    this.halfZoom = {
+      rx: this.refX,
+      ry: this.refY,
+      x: 0,
+      y: 0,
+      zoom: 1
+    }
+
     this.update()
     this.refresh()
 
@@ -125,6 +133,8 @@ export class PZcanvas {
       this.update()
     }
     // shadowCtx.translate(dx, dy); // NOT NECESSARY I GUESS
+    this.halfZoom.rx = this.refX
+    this.halfZoom.ry = this.refY
     this.refresh()
   }
 
@@ -133,6 +143,8 @@ export class PZcanvas {
     const { shadowCtx } = this
     scale = this.trim(scale, 1 / (this.scale * this.area), 20 / this.scale)
     if (scale === 1) return
+    this.halfZoom = { ...this.halfZoom, x, y, zoom: this.halfZoom.zoom * scale }
+    this.refresh()
     let pt = this.real2canvas(x, y)
     shadowCtx.scale(scale, scale)
     shadowCtx.save()
@@ -151,12 +163,14 @@ export class PZcanvas {
     shadowCtx.restore()
     this.panX -= (pt2.x - pt.x) / this.scale
     this.panY -= (pt2.y - pt.y) / this.scale
+
     this.zoomDebounceTimeout = setTimeout(() => {
       // panning and reversing so the overflow will be fixed
+      this.halfZoom.zoom = 1
       this.pan(1, 1)
       this.pan(-1, -1)
       this.update()
-    }, 200)
+    }, 300)
   }
 
   fixOverFlow () {
@@ -204,16 +218,18 @@ export class PZcanvas {
     }
   }
 
-  // SCALE ILE CARPIMI KALDIR SORUN OLURSA
   refresh () {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
+    const { rx, ry, x, y, zoom } = this.halfZoom
+    const hx = zoom === 1 ? 0 : -refX + rx + x - x / zoom
+    const hy = zoom === 1 ? 0 : -refY + ry + y - y / zoom
     ctx.clearRect(0, 0, width, height)
     ctx.drawImage(
       shadowCanvas,
-      refX,
-      refY,
-      width,
-      height,
+      refX + hx,
+      refY + hy,
+      width / zoom,
+      height / zoom,
       0,
       0,
       width,
