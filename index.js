@@ -166,10 +166,51 @@ pz.canvas.onmouseup = evt => {
 
 const touchDuration = 500
 let touchTimer, lastTouch
+const touchCache = []
+
+function handleTwoFinger (evt) {
+  if (evt.targetTouches.length !== 2 || evt.changedTouches.length !== 2) return
+  const touch1 = evt.targetTouches[0]
+  const touch2 = evt.targetTouches[1]
+  let index1 = -1
+  let index2 = -1
+  touchCache.forEach((touch, i) => {
+    if (touch.identifier === touch1.identifier) index1 = i
+    else if (touch.identifier === touch2.identifier) index2 = i
+  })
+  if (index1 < 0 || index2 < 0) {
+    touchCache.length = 0
+    return
+  }
+  const diffX1 = touch1.clientX - touchCache[index1].clientX
+  const diffX2 = touch2.clientX - touchCache[index2].clientX
+  const diffY1 = touch1.clientY - touchCache[index1].clientY
+  const diffY2 = touch2.clientY - touchCache[index2].clientY
+  let panX = 0
+  let panY = 0
+  if (diffX1 > 0 && diffX2 > 0) panX = -Math.min(diffX1, diffX2)
+  else if (diffX1 < 0 && diffX2 < 0) panX = -Math.max(diffX1, diffX2)
+  if (diffY1 > 0 && diffY2 > 0) panY = -Math.min(diffY1, diffY2)
+  else if (diffY1 < 0 && diffY2 < 0) panY = -Math.max(diffY1, diffY2)
+  pz.pan(panX, panY)
+
+  const PINCH_THRESHHOLD = evt.target.clientWidth / 10
+  if (diffX1 >= PINCH_THRESHHOLD && diffX2 >= PINCH_THRESHHOLD) { evt.target.style.background = 'green' }
+  touchCache.length = 0
+  touchCache.push(touch1, touch2)
+}
 
 pz.canvas.addEventListener('touchstart', (evt) => {
   evt.preventDefault()
   // evt.stopPropagation()
+  if (evt.targetTouches.length === 2) {
+    if (mode === 'edit') drawingPath.cancel()
+    touchCache.push(...evt.targetTouches)
+    clearTimeout(touchTimer)
+    touchTimer = null
+    dragStart = dragging = false
+    return
+  }
   touchTimer = setTimeout(() => {
     menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
     touchTimer = null
@@ -184,6 +225,10 @@ pz.canvas.addEventListener('touchstart', (evt) => {
 
 pz.canvas.addEventListener('touchmove', (evt) => {
   evt.preventDefault()
+  if (evt.targetTouches.length === 2) {
+    handleTwoFinger(evt)
+    return
+  }
   const touch = evt.touches[0]
   if (menu.visible) {
     menu.ontouchmove(evt)
