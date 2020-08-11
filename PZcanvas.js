@@ -139,10 +139,10 @@ export class PZcanvas {
   }
 
   zoom (scale, x, y) {
-    clearTimeout(this.zoomDebounceTimeout)
     const { shadowCtx } = this
     scale = this.trim(scale, 1 / (this.scale * this.area), 20 / this.scale)
     if (scale === 1) return
+    clearTimeout(this.zoomDebounceTimeout)
     this.halfZoom = { ...this.halfZoom, x, y, zoom: this.halfZoom.zoom * scale }
     this.refresh()
     let pt = this.real2canvas(x, y)
@@ -221,8 +221,8 @@ export class PZcanvas {
   refresh () {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
     const { rx, ry, x, y, zoom } = this.halfZoom
-    const hx = zoom === 1 ? 0 : -refX + rx + x - x / zoom
-    const hy = zoom === 1 ? 0 : -refY + ry + y - y / zoom
+    const hx = zoom === 1 ? 0 : (-refX + rx + x - x / zoom)
+    const hy = zoom === 1 ? 0 : (-refY + ry + y - y / zoom)
     ctx.clearRect(0, 0, width, height)
     ctx.drawImage(
       shadowCanvas,
