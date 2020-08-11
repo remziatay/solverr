@@ -30,24 +30,18 @@ export class PZcanvas {
       y: 0,
       zoom: 1
     }
+    this.tempPath = null
 
     this.update()
     this.refresh()
 
-    this.unfinishedPath = null
     this.trim = (num, min, max) => Math.min(max, Math.max(min, num))
-    this.shadowCanvas.onmousemove = (evt) => {
-      if (evt.shiftKey) {
-        console.clear()
-        console.log(this.real2canvas(evt.offsetX, evt.offsetY))
-      }
-    }
   }
 
   clear () {
     const { width, height, area } = this
     this.paths = []
-    this.unfinishedPath = null
+    this.tempPath = null
     this.scale = 1
 
     this.refX = (width * (area - 1)) / 2
@@ -58,7 +52,6 @@ export class PZcanvas {
     this.centerY = (height * area) / 2
 
     this.update()
-    this.refresh()
   }
 
   canvasToAddPoint (x, y) {
@@ -218,7 +211,7 @@ export class PZcanvas {
     }
   }
 
-  refresh () {
+  refresh (tempControl = true) {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
     const { rx, ry, x, y, zoom } = this.halfZoom
     const hx = zoom === 1 ? 0 : (-refX + rx + x - x / zoom)
@@ -235,5 +228,6 @@ export class PZcanvas {
       width,
       height
     )
+    if (this.tempPath && tempControl) this.tempPath.draw(true)
   }
 }

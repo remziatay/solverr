@@ -1,11 +1,13 @@
 export class PZPath {
   constructor (pzCanvas, conn, width = 10, color = 'black') {
     this.pzCanvas = pzCanvas
+    this.remote = true
     this.conn = conn
     this.width = width / pzCanvas.scale
     this.color = color
     this.path = new Path2D()
     this.points = []
+    this.tempPoints = []
   }
 
   from ({ path, width, color }) {
@@ -20,6 +22,10 @@ export class PZPath {
   }
 
   add (x1, y1, x2, y2) {
+    if (this.remote) {
+      this.remote = false
+      this.pzCanvas.tempPath = this
+    }
     if (!this.points.length) {
       const p1 = this.pzCanvas.canvasToAddPoint(x1, y1)
       this.path.moveTo(p1.x, p1.y)
@@ -29,6 +35,7 @@ export class PZPath {
     this.path.lineTo(p2.x, p2.y)
     this.path.moveTo(p2.x, p2.y)
     this.points.push({ x: p2.x, y: p2.y })
+    this.tempPoints.push({ x1, y1, x2, y2 })
 
     const ctx = this.pzCanvas.ctx
     ctx.save()
@@ -44,6 +51,22 @@ export class PZPath {
 
   draw (temp = false) {
     const ctx = temp ? this.pzCanvas.ctx : this.pzCanvas.shadowCtx
+    if (temp) {
+      ctx.save()
+      ctx.strokeStyle = this.color
+      ctx.lineWidth = this.width * this.pzCanvas.scale
+      ctx.lineCap = ctx.lineJoin = 'round'
+
+      this.tempPoints.forEach((p) => {
+        ctx.beginPath()
+        ctx.moveTo(p.x1, p.y1)
+        ctx.lineTo(p.x2, p.y2)
+        ctx.stroke()
+      })
+
+      ctx.restore()
+      return
+    }
     ctx.save()
     ctx.strokeStyle = this.color
     ctx.lineWidth = this.width * (temp ? this.pzCanvas.scale : 1)
@@ -54,7 +77,7 @@ export class PZPath {
 
   finish () {
     const { scale, panX, panY, shadowCtx } = this.pzCanvas
-
+    if (!this.remote) this.pzCanvas.tempPath = null
     shadowCtx.save()
     shadowCtx.setTransform(scale, 0, 0, scale, panX, panY)
     this.draw()
@@ -78,8 +101,10 @@ export class PZPath {
   }
 
   cancel () {
+    if (!this.remote) this.pzCanvas.tempPath = null
     this.path = new Path2D()
     this.points = []
+    this.tempPoints = []
     this.pzCanvas.refresh()
   }
 }

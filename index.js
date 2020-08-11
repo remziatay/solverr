@@ -102,7 +102,7 @@ function connected (connection) {
 
 function ondata (data) {
   if (data.type === 'path') new PZPath(pz, conn).from(data).finish()
-  else if (data.type === 'image') new PZImage(pz, conn).from(data)
+  else if (data.type === 'image') new PZImage(pz, conn, true).from(data)
   else if (data.type === 'clear') pz.clear()
 }
 

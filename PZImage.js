@@ -1,6 +1,8 @@
 export class PZImage {
-  constructor (pzCanvas, conn) {
+  constructor (pzCanvas, conn, remote = false) {
     this.pzCanvas = pzCanvas
+    this.remote = remote
+    if (!remote) pzCanvas.tempPath = this
     this.conn = conn
     this.end = (evt) => this.finish(evt)
   }
@@ -55,10 +57,10 @@ export class PZImage {
     document.body.addEventListener('click', this.end)
   }
 
-  drawFaded () {
+  drawFaded (refresh = true) {
     const ctx = this.pzCanvas.ctx
     const { image, width, height, x, y, r } = this
-    this.pzCanvas.refresh()
+    if (refresh) this.pzCanvas.refresh(false)
     ctx.save()
     ctx.globalAlpha = 0.5
     ctx.drawImage(image, 0, 0, image.width, image.height, x, y, width, height)
@@ -97,7 +99,6 @@ export class PZImage {
       if (Math.abs(evt.movementX) > Math.abs(evt.movementY)) { this.scale *= 1 + evt.movementX / width } else this.scale *= 1 + evt.movementY / height
       this.width = image.width * this.scale
       this.height = image.height * this.scale
-      this.drawFaded()
     }
 
     this.drawFaded()
@@ -122,27 +123,14 @@ export class PZImage {
 
   finish (evt) {
     const canvas = this.pzCanvas.canvas
-
     if (evt && evt.target === canvas) return
-    const { image, width, height, x, y } = this
+    if (!this.remote) this.pzCanvas.tempPath = null
     document.body.removeEventListener('click', this.end)
     canvas.onmousedown = this.oldMouseDown
     canvas.onmousemove = this.oldMouseMove
     canvas.onmouseup = this.oldMouseUp
     canvas.style.cursor = 'auto'
-    this.pzCanvas.refresh()
-    this.pzCanvas.ctx.drawImage(
-      image,
-      0,
-      0,
-      image.width,
-      image.height,
-      x,
-      y,
-      width,
-      height
-    )
-    const p = this.pzCanvas.canvasToAddPoint(x, y)
+    const p = this.pzCanvas.canvasToAddPoint(this.x, this.y)
     this.x = p.x
     this.y = p.y
     this.scale /= this.pzCanvas.scale
@@ -163,7 +151,11 @@ export class PZImage {
     this.pzCanvas.refresh()
   }
 
-  draw () {
+  draw (temp = false) {
+    if (temp) {
+      this.drawFaded(false)
+      return
+    }
     const { shadowCtx, panX, panY, scale } = this.pzCanvas
     const { image, x, y } = this
     shadowCtx.save()
