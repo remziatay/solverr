@@ -126,8 +126,6 @@ export class PZImage {
   }
 
   newOnMouseMove (evt) {
-    document.getElementById('status-text').innerText = evt.offsetX + '-' + evt.offsetX + '-' + evt.movementX + '-' + evt.movementY
-
     const { image, width, height, x, y, r } = this
     const canvas = this.pzCanvas.canvas
     if (!this.dragStart) {
