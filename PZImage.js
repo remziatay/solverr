@@ -170,7 +170,7 @@ export class PZImage {
     const canvas = this.pzCanvas.canvas
     if (evt && evt.target === canvas) return
     if (!this.remote) this.pzCanvas.tempPath = null
-    document.body.removeEventListener('click', this.end)
+    document.removeEventListener('click', this.end)
     canvas.onmousedown = this.oldMouseDown
     canvas.onmousemove = this.oldMouseMove
     canvas.onmouseup = this.oldMouseUp
