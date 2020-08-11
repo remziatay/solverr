@@ -216,7 +216,7 @@ function handleTwoFinger (evt) {
   touchCache.push(touch1, touch2)
 }
 
-pz.canvas.addEventListener('touchstart', (evt) => {
+pz.canvas.ontouchstart = (evt) => {
   evt.preventDefault()
   // evt.stopPropagation()
   if (evt.targetTouches.length === 2) {
@@ -237,9 +237,9 @@ pz.canvas.addEventListener('touchstart', (evt) => {
     dragging = false
     if (mode === 'edit') drawingPath = new PZPath(pz, conn, strokeSize)
   }
-}, false)
+}
 
-pz.canvas.addEventListener('touchmove', (evt) => {
+pz.canvas.ontouchmove = (evt) => {
   evt.preventDefault()
   if (evt.targetTouches.length === 2) {
     handleTwoFinger(evt)
@@ -274,9 +274,9 @@ pz.canvas.addEventListener('touchmove', (evt) => {
       break
   }
   lastTouch = touch
-}, false)
+}
 
-pz.canvas.addEventListener('touchend', (evt) => {
+pz.canvas.ontouchend = (evt) => {
   evt.preventDefault()
   // evt.stopPropagation()
   zoomCenter = null
@@ -295,7 +295,7 @@ pz.canvas.addEventListener('touchend', (evt) => {
     drawingPath.finish()
   }
   dragging = false
-}, false)
+}
 
 const strokeSizeStep = 5
 function handleScroll (evt) {

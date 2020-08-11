@@ -27,6 +27,9 @@ export class PZImage {
       this.oldMouseDown = this.pzCanvas.canvas.onmousedown
       this.oldMouseMove = this.pzCanvas.canvas.onmousemove
       this.oldMouseUp = this.pzCanvas.canvas.onmouseup
+      this.oldTouchStart = this.pzCanvas.canvas.ontouchstart
+      this.oldTouchMove = this.pzCanvas.canvas.ontouchmove
+      this.oldTouchEnd = this.pzCanvas.canvas.ontouchend
 
       this.image = new Image()
       this.image.onload = () => this.onImageLoad()
@@ -54,7 +57,10 @@ export class PZImage {
     canvas.onmousedown = (evt) => this.newOnMouseDown(evt)
     canvas.onmousemove = (evt) => this.newOnMouseMove(evt)
     canvas.onmouseup = (evt) => this.newOnMouseUp(evt)
-    document.body.addEventListener('click', this.end)
+    canvas.ontouchstart = (evt) => this.newOnTouchStart(evt)
+    canvas.ontouchmove = (evt) => this.newOnTouchMove(evt)
+    canvas.ontouchend = (evt) => this.newOnTouchEnd(evt)
+    document.addEventListener('click', this.end)
   }
 
   drawFaded (refresh = true) {
@@ -76,6 +82,43 @@ export class PZImage {
     ctx.restore()
   }
 
+  newOnTouchStart (evt) {
+    evt.preventDefault()
+    if (evt.touches.length !== 1) return
+    const rect = evt.target.getBoundingClientRect()
+    const { width, height, x, y, r } = this
+    this.lastTouch = evt.touches[0]
+    const dx = evt.touches[0].clientX - rect.left - x
+    const dy = evt.touches[0].clientY - rect.top - y
+    if ((dx - width) ** 2 + (dy - height) ** 2 <= r ** 2) this.mode = 'nwse-resize'
+    else if (dx < width && dx > 0 && dy < height && dy > 0) this.mode = 'move'
+    else this.mode = 'auto'
+    this.newOnMouseDown({ buttons: 1 })
+  }
+
+  newOnTouchMove (evt) {
+    evt.preventDefault()
+    if (evt.touches.length !== 1) return
+    const touch = evt.touches[0]
+    const rect = evt.target.getBoundingClientRect()
+    this.newOnMouseMove({
+      offsetX: touch.clientX - rect.left,
+      offsetY: touch.clientY - rect.top,
+      movementX: touch.clientX - this.lastTouch.clientX,
+      movementY: touch.clientY - this.lastTouch.clientY
+    })
+    this.lastTouch = touch
+  }
+
+  newOnTouchEnd (evt) {
+    evt.preventDefault()
+    this.lastTouch = null
+    if (!this.dragStart) return
+    this.dragStart = false
+    if (this.mode === 'auto') this.finish()
+    this.dragging = false
+  }
+
   newOnMouseDown (evt) {
     if (evt.buttons !== 1) return false
     this.dragStart = true
@@ -83,6 +126,8 @@ export class PZImage {
   }
 
   newOnMouseMove (evt) {
+    document.getElementById('status-text').innerText = evt.offsetX + '-' + evt.offsetX + '-' + evt.movementX + '-' + evt.movementY
+
     const { image, width, height, x, y, r } = this
     const canvas = this.pzCanvas.canvas
     if (!this.dragStart) {
@@ -106,10 +151,10 @@ export class PZImage {
 
   newOnMouseUp (evt) {
     if (!this.dragStart) return
-    const canvas = this.pzCanvas.canvas
     this.dragStart = false
     if (this.mode === 'auto') this.finish()
     else if (!this.dragging) {
+      const canvas = this.pzCanvas.canvas
       const scaleFactor = evt.shiftKey ? 0.9 : 1.1
       this.scale *= scaleFactor
       this.x -= (canvas.width / 2 - this.x) * (scaleFactor - 1)
@@ -129,6 +174,9 @@ export class PZImage {
     canvas.onmousedown = this.oldMouseDown
     canvas.onmousemove = this.oldMouseMove
     canvas.onmouseup = this.oldMouseUp
+    canvas.ontouchstart = this.oldTouchStart
+    canvas.ontouchmove = this.oldTouchMove
+    canvas.ontouchend = this.oldTouchEnd
     canvas.style.cursor = 'auto'
     const p = this.pzCanvas.canvasToAddPoint(this.x, this.y)
     this.x = p.x
