@@ -300,6 +300,7 @@ pz.canvas.addEventListener('touchend', (evt) => {
 const strokeSizeStep = 5
 function handleScroll (evt) {
   evt.preventDefault()
+  if (dragStart) return
   const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
 
   if (evt.ctrlKey && mode === 'edit') {
