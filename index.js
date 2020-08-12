@@ -7,12 +7,6 @@ import { PZImage } from './PZImage.js'
 const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
 const status = document.getElementById('status-text')
-/*
-const canvasDiv = document.getElementById('canvas-div')
-const layerImage = document.getElementById('layer-image').getContext('2d')
-const layerStudent = document.getElementById('layer-student').getContext('2d')
-const layerTeacher = document.getElementById('layer-teacher').getContext('2d')
-*/
 
 status.innerText = 'Connecting...'
 
@@ -34,20 +28,6 @@ const peer = new Peer(name1, {
   secure: true,
   port: 443
 })
-
-// const canvas = new Canvas([layerImage, layerStudent, layerTeacher]);
-/*
-function setSizes () {
-  layerTeacher.canvas.width = layerStudent.canvas.width = layerImage.canvas.width =
-    canvasDiv.offsetWidth
-  layerTeacher.canvas.height = layerStudent.canvas.height = layerImage.canvas.height =
-    canvasDiv.offsetHeight
-}
-
-setSizes()
-window.onscroll = setSizes
-window.onresize = setSizes
-*/
 
 window.addEventListener('resize', () => menu.resize())
 
@@ -324,116 +304,3 @@ clearButton.onclick = () => {
     type: 'clear'
   })
 }
-
-/*
-const scaleFactor = 1.1
-// let scale = 1;
-
-var tempCanvas = document.createElement('canvas')
-// eslint-disable-next-line no-tabs
-var tempCtx = tempCanvas.getContext('2d')
-tempCanvas.width = canvasDiv.offsetWidth
-tempCanvas.height = canvasDiv.offsetHeight
-document.body.appendChild(tempCanvas)
-
-function draw () {
-  tempCtx.clearRect(0, 0, canvasDiv.offsetWidth - panX, canvasDiv.offsetHeight - panY)
-
-  tempCtx.setTransform(1 / scale, 0, 0, 1 / scale, -panX, -panY)
-  tempCtx.drawImage(layerTeacher.canvas, 0, 0)
-  tempCtx.setTransform(1, 0, 0, 1, 0, 0)
-  layerImage.clearRect(0, 0, canvasDiv.offsetWidth - panX, canvasDiv.offsetHeight - panY)
-  layerTeacher.clearRect(0, 0, canvasDiv.offsetWidth - panX, canvasDiv.offsetHeight - panY)
-  // layerImage.save();
-  // layerImage.transform(scale, 0, 0, scale, panX, panY)
-  layerImage.setTransform(scale, 0, 0, scale, panX, panY)
-  layerStudent.setTransform(scale, 0, 0, scale, panX, panY)
-
-  layerTeacher.drawImage(tempCanvas, 0, 0)
-  layerTeacher.setTransform(scale, 0, 0, scale, panX, panY)
-
-  layerImage.drawImage(image, 0, 0)
-  // layerImage.restore();
-}
-
-dragStart = false
-dragged = true
-
-canvasDiv.addEventListener(
-  'mousedown',
-  function (evt) {
-    // document.body.style.userSelect = 'none';
-    dragStart = true
-    dragged = false
-  },
-  false
-)
-
-let cumX = 0
-let cumY = 0
-
-const panIt = () => {
-  requestAnimationFrame(panIt)
-  if (!cumX && !cumY) return
-  requestAnimationFrame(() => {
-    canvas.pan(cumX, cumY)
-    cumX = 0
-    cumY = 0
-  })
-}
-requestAnimationFrame(panIt)
-
-canvasDiv.addEventListener(
-  'mousemove',
-  function (evt) {
-    if (dragStart) {
-      dragged = true
-      cumX += evt.movementX
-      cumY += evt.movementY
-      // canvas.pan(evt.movementX, evt.movementY);
-      return
-    }
-
-    var rect = canvasDiv.getBoundingClientRect()
-    const x = evt.clientX - rect.left
-    const y = evt.clientY - rect.top
-    canvas.addLine(x - evt.movementX, y - evt.movementY, x, y, 2)
-    /* panX += evt.movementX;
-    panY += evt.movementY;
-    draw(); /*
-  },
-  false
-)
-
-canvasDiv.addEventListener(
-  'mouseup',
-  function (evt) {
-    dragStart = false
-    if (evt.ctrlKey) {
-      var rect = canvasDiv.getBoundingClientRect()
-      const x = evt.clientX - rect.left
-      const y = evt.clientY - rect.top
-      console.log(x, y)
-      console.log(canvas.inversePoint(x, y))
-      console.log(canvas.getPoint(canvas.inversePoint(x, y)))
-      return
-    }
-
-    if (!dragged) zoom(evt.shiftKey ? -1 : 1)
-  },
-  false
-)
-
-var zoom = function (times) {
-  canvas.zoom(Math.pow(scaleFactor, times))
-}
-
-var handleScroll = function (evt) {
-  var delta = evt.wheelDelta ? evt.wheelDelta / 40 : evt.detail ? -evt.detail : 0
-  if (delta) zoom(delta)
-  return evt.preventDefault() && false
-}
-
-canvasDiv.addEventListener('DOMMouseScroll', handleScroll, false)
-canvasDiv.addEventListener('mousewheel', handleScroll, false)
-*/
