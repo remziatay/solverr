@@ -30,6 +30,7 @@ export class PZImage {
       this.oldTouchStart = this.pzCanvas.canvas.ontouchstart
       this.oldTouchMove = this.pzCanvas.canvas.ontouchmove
       this.oldTouchEnd = this.pzCanvas.canvas.ontouchend
+      this.oldCursor = this.pzCanvas.canvas.style.cursor
 
       this.image = new Image()
       this.image.onload = () => this.onImageLoad()
@@ -175,7 +176,7 @@ export class PZImage {
     canvas.ontouchstart = this.oldTouchStart
     canvas.ontouchmove = this.oldTouchMove
     canvas.ontouchend = this.oldTouchEnd
-    canvas.style.cursor = 'auto'
+    canvas.style.cursor = this.oldCursor
     const p = this.pzCanvas.canvasToAddPoint(this.x, this.y)
     this.x = p.x
     this.y = p.y
