@@ -7,6 +7,7 @@ import { PZImage } from './PZImage.js'
 const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
 const status = document.getElementById('status-text')
+const canvas = document.getElementById('main-canvas')
 
 status.innerText = 'Connecting...'
 
@@ -31,11 +32,11 @@ const peer = new Peer(name1, {
 
 window.addEventListener('resize', () => menu.resize())
 
-const pz = new PZcanvas(600, 400, 4)
+let pz
 const menu = new CircleContextMenu(200)
 menu.addButton('Pan', () => {
   mode = 'pan'
-  pz.canvas.style.cursor = 'grab'
+  canvas.style.cursor = 'grab'
 })
 menu.addButton('Draw', () => {
   mode = 'edit'
@@ -47,11 +48,11 @@ function changeStrokeSize (change) {
   strokeSize += change
   strokeSize = Math.min(Math.max(strokeSize, 3), 128)
   if (strokeSize < 5) {
-    pz.canvas.style.cursor = 'crosshair'
+    canvas.style.cursor = 'crosshair'
     return
   }
   const svg = `<svg width="${strokeSize}" height="${strokeSize}" xmlns="http://www.w3.org/2000/svg"><circle r="${strokeSize / 2 - 1}" cy="${strokeSize / 2}" cx="${strokeSize / 2}" stroke-width="1.5" stroke="black" fill="none"/></svg>`
-  pz.canvas.style.cursor = `url('data:image/svg+xml;utf8,${svg}') ${strokeSize / 2} ${strokeSize / 2}, auto`
+  canvas.style.cursor = `url('data:image/svg+xml;utf8,${svg}') ${strokeSize / 2} ${strokeSize / 2}, auto`
 }
 
 // document.body.appendChild(pz.shadowCanvas);
@@ -75,8 +76,15 @@ function connected (connection) {
   if (connection) conn = connection
   status.innerText = 'Connected'
   console.log('connected to peer')
-  document.body.appendChild(pz.canvas)
-  pz.canvas.style.border = '1px solid green'
+
+  canvas.hidden = false
+  const rect = canvas.getBoundingClientRect()
+  canvas.width = rect.width
+  canvas.height = rect.height
+  canvas.hidden = true
+  pz = new PZcanvas(canvas, 3200, 2000)
+  canvas.hidden = false
+  canvas.style.border = '1px solid green'
   conn.on('data', ondata)
 }
 
@@ -88,17 +96,17 @@ function ondata (data) {
 
 let mode = 'edit' // edit or pan
 if (mode === 'edit') changeStrokeSize(0)
-else if (mode === 'pan') pz.canvas.style.cursor = 'grab'
+else if (mode === 'pan') canvas.style.cursor = 'grab'
 let dragStart = false
 let dragging = false
 let drawingPath
 
-pz.canvas.onmousedown = evt => {
+canvas.onmousedown = evt => {
   if (evt.buttons === 1) {
     dragStart = true
     dragging = false
     if (mode === 'edit') drawingPath = new PZPath(pz, conn, strokeSize)
-    else if (mode === 'pan') pz.canvas.style.cursor = 'grabbing'
+    else if (mode === 'pan') canvas.style.cursor = 'grabbing'
   } else if (evt.buttons === 3 && mode === 'edit') {
     // left and right click at the same time to cancel dragging
     dragStart = false
@@ -111,9 +119,9 @@ pz.canvas.onmousedown = evt => {
 
 menu.canvas.onmouseup = () => menu.choose()
 
-pz.canvas.oncontextmenu = evt => evt.preventDefault()
+canvas.oncontextmenu = evt => evt.preventDefault()
 
-pz.canvas.onmousemove = evt => {
+canvas.onmousemove = evt => {
   if (!dragStart) return
   dragging = true
   let x, y
@@ -131,9 +139,9 @@ pz.canvas.onmousemove = evt => {
   }
 }
 
-pz.canvas.onmouseup = evt => {
+canvas.onmouseup = evt => {
   if (!dragStart || evt.button !== 0) return
-  if (mode === 'pan') pz.canvas.style.cursor = 'grab'
+  if (mode === 'pan') canvas.style.cursor = 'grab'
   dragStart = false
   if (!dragging) {
     const zoom = evt.shiftKey ? 0.9 : 1.1
@@ -196,7 +204,7 @@ function handleTwoFinger (evt) {
   touchCache.push(touch1, touch2)
 }
 
-pz.canvas.ontouchstart = (evt) => {
+canvas.ontouchstart = (evt) => {
   evt.preventDefault()
   // evt.stopPropagation()
   if (evt.targetTouches.length === 2) {
@@ -219,7 +227,7 @@ pz.canvas.ontouchstart = (evt) => {
   }
 }
 
-pz.canvas.ontouchmove = (evt) => {
+canvas.ontouchmove = (evt) => {
   evt.preventDefault()
   if (evt.targetTouches.length === 2) {
     handleTwoFinger(evt)
@@ -256,7 +264,7 @@ pz.canvas.ontouchmove = (evt) => {
   lastTouch = touch
 }
 
-pz.canvas.ontouchend = (evt) => {
+canvas.ontouchend = (evt) => {
   evt.preventDefault()
   // evt.stopPropagation()
   zoomCenter = null
@@ -290,7 +298,7 @@ function handleScroll (evt) {
   pz.zoom(1 - delta / 10, evt.offsetX, evt.offsetY)
 }
 
-pz.canvas.addEventListener('wheel', handleScroll, false)
+canvas.addEventListener('wheel', handleScroll, false)
 
 inputImage.onchange = function () {
   const file = inputImage.files[0]

@@ -1,28 +1,35 @@
 export class PZcanvas {
-  constructor (width, height, area) {
-    this.width = width
-    this.height = height
-    this.area = area
-    this.paths = []
-    this.scale = 1
+  constructor (canvas, shadowWidth, shadowHeight) {
+    this.width = canvas.width
+    this.height = canvas.height
+    this.shadowWidth = shadowWidth
+    this.shadowHeight = shadowHeight
 
-    this.refX = (width * (area - 1)) / 2
-    this.refY = (height * (area - 1)) / 2
-    this.panX = 0
-    this.panY = 0
-    this.centerX = (width * area) / 2
-    this.centerY = (height * area) / 2
-
-    this.canvas = document.createElement('canvas')
-    this.canvas.width = width
-    this.canvas.height = height
+    this.canvas = canvas
     this.ctx = this.canvas.getContext('2d')
 
     this.shadowCanvas = document.createElement('canvas')
-    this.shadowCanvas.width = width * area
-    this.shadowCanvas.height = height * area
+    this.shadowCanvas.width = shadowWidth
+    this.shadowCanvas.height = shadowHeight
     this.shadowCtx = this.shadowCanvas.getContext('2d')
-    // this.shadowCtx.translate(this.refX, this.refY);
+
+    this.clear()
+    this.refresh()
+
+    this.trim = (num, min, max) => Math.min(max, Math.max(min, num))
+  }
+
+  clear () {
+    const { width, height, shadowWidth, shadowHeight } = this
+    this.paths = []
+    this.tempPath = null
+    this.scale = 1
+
+    this.refX = (shadowWidth - width) / 2
+    this.refY = (shadowHeight - height) / 2
+    this.panX = 0
+    this.panY = 0
+
     this.halfZoom = {
       rx: this.refX,
       ry: this.refY,
@@ -30,26 +37,6 @@ export class PZcanvas {
       y: 0,
       zoom: 1
     }
-    this.tempPath = null
-
-    this.update()
-    this.refresh()
-
-    this.trim = (num, min, max) => Math.min(max, Math.max(min, num))
-  }
-
-  clear () {
-    const { width, height, area } = this
-    this.paths = []
-    this.tempPath = null
-    this.scale = 1
-
-    this.refX = (width * (area - 1)) / 2
-    this.refY = (height * (area - 1)) / 2
-    this.panX = 0
-    this.panY = 0
-    this.centerX = (width * area) / 2
-    this.centerY = (height * area) / 2
 
     this.update()
   }
@@ -65,26 +52,25 @@ export class PZcanvas {
   */
 
   dose () {
-    const ctx = this.shadowCtx
-    for (let i = 0; i <= ctx.canvas.width + 2000; i += 50) {
-      for (let j = 0; j <= ctx.canvas.height + 2000; j += 50) {
-        ctx.fillRect(i, j, 1, 1)
-        ctx.fillText(i / 50 + ',' + j / 50, i, j)
+    for (let i = 0; i <= this.shadowWidth + 2000; i += 50) {
+      for (let j = 0; j <= this.shadowHeight + 2000; j += 50) {
+        this.shadowCtx.fillRect(i, j, 1, 1)
+        this.shadowCtx.fillText(i / 50 + ',' + j / 50, i, j)
       }
     }
   }
 
   update () {
-    const { width, height, area, shadowCanvas, shadowCtx, panX, panY, scale } = this
+    const { shadowWidth, shadowHeight, shadowCtx, panX, panY, scale } = this
     requestAnimationFrame(() => {
       shadowCtx.save()
       shadowCtx.setTransform(1, 0, 0, 1, 0, 0)
       shadowCtx.translate(panX, panY)
       shadowCtx.scale(scale, scale)
       shadowCtx.lineWidth = 1 / scale
-      shadowCtx.clearRect(0, 0, shadowCanvas.width, shadowCanvas.height)
+      shadowCtx.clearRect(0, 0, shadowWidth, shadowHeight)
       this.dose()
-      shadowCtx.strokeRect(0, 0, width * area, height * area)
+      shadowCtx.strokeRect(0, 0, shadowWidth, shadowHeight)
       this.paths.forEach((path) => path.draw())
       shadowCtx.restore()
       this.refresh()
@@ -92,31 +78,19 @@ export class PZcanvas {
   }
 
   pan (dx, dy) {
-    const { width, height, area, scale, refX, refY } = this
-    dx = this.trim(
-      dx,
-      this.panX - refX,
-      scale * width * area - (refX + width) + this.panX
-    )
-    dy = this.trim(
-      dy,
-      this.panY - refY,
-      scale * height * area - (refY + height) + this.panY
-    )
+    const { width, height, shadowWidth, shadowHeight, scale, refX, refY } = this
+    dx = this.trim(dx, this.panX - refX, scale * shadowWidth - (refX + width) + this.panX)
+    dy = this.trim(dy, this.panY - refY, scale * shadowHeight - (refY + height) + this.panY)
     if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return
-    const overX = this.trim(dx, -refX, this.shadowCanvas.width - width - refX)
-    const overY = this.trim(
-      dy,
-      -refY,
-      this.shadowCanvas.height - height - refY
-    )
+    const overX = this.trim(dx, -refX, shadowWidth - width - refX)
+    const overY = this.trim(dy, -refY, shadowHeight - height - refY)
     this.refX += dx
     this.refY += dy
     if (Math.abs(dx - overX) >= 1 || Math.abs(dy - overY) >= 1) {
       const x = this.refX
       const y = this.refY
-      this.refX = (this.width * (this.area - 1)) / 2
-      this.refY = (this.height * (this.area - 1)) / 2
+      this.refX = (shadowWidth - width) / 2
+      this.refY = (shadowHeight - height) / 2
 
       this.panX -= x - this.refX
       this.panY -= y - this.refY
@@ -132,8 +106,8 @@ export class PZcanvas {
   }
 
   zoom (scale, x, y) {
-    const { shadowCtx } = this
-    scale = this.trim(scale, 1 / (this.scale * this.area), 20 / this.scale)
+    const { shadowCtx, width, height, shadowWidth, shadowHeight } = this
+    scale = this.trim(scale, 1 / (this.scale * (shadowWidth / width)), 20 / this.scale)
     if (scale === 1) return
     clearTimeout(this.zoomDebounceTimeout)
     this.halfZoom = { ...this.halfZoom, x, y, zoom: this.halfZoom.zoom * scale }
@@ -150,8 +124,8 @@ export class PZcanvas {
     )
     this.scale *= scale
     pt = this.real2canvas(x, y)
-    this.refX = (this.width * (this.area - 1)) / 2
-    this.refY = (this.height * (this.area - 1)) / 2
+    this.refX = (shadowWidth - width) / 2
+    this.refY = (shadowHeight - height) / 2
     pt = this.real2canvas(x, y)
     shadowCtx.restore()
     this.panX -= (pt2.x - pt.x) / this.scale
@@ -178,14 +152,14 @@ export class PZcanvas {
       this.panY = 0
       // shadowCtx.translate(0, -this.panY);
     }
-    if (panX < -this.shadowCanvas.width * (this.scale - 1)) {
-      const diff = this.panX + this.shadowCanvas.width * (this.scale - 1)
+    if (panX < -this.shadowWidth * (this.scale - 1)) {
+      const diff = this.panX + this.shadowWidth * (this.scale - 1)
       this.refX -= diff
       this.panX -= diff
       // shadowCtx.translate(-diff, 0);
     }
-    if (panY < -this.shadowCanvas.height * (this.scale - 1)) {
-      const diff = this.panY + this.shadowCanvas.height * (this.scale - 1)
+    if (panY < -this.shadowHeight * (this.scale - 1)) {
+      const diff = this.panY + this.shadowHeight * (this.scale - 1)
       this.refY -= diff
       this.panY -= diff
       // shadowCtx.translate(0, -diff);
