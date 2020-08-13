@@ -76,15 +76,7 @@ function connected (connection) {
   if (connection) conn = connection
   status.innerText = 'Connected'
   console.log('connected to peer')
-
-  canvas.hidden = false
-  const rect = canvas.getBoundingClientRect()
-  canvas.width = rect.width
-  canvas.height = rect.height
-  canvas.hidden = true
-  pz = new PZcanvas(canvas, 3200, 2000)
-  canvas.hidden = false
-  canvas.style.border = '1px solid green'
+  initCanvas()
   conn.on('data', ondata)
 }
 
@@ -94,6 +86,26 @@ function ondata (data) {
   else if (data.type === 'clear') pz.clear()
 }
 
+function initCanvas () {
+  canvas.hidden = false
+  const rect = canvas.getBoundingClientRect()
+  canvas.width = rect.width
+  canvas.height = rect.height
+  canvas.style.width = canvas.width + 'px'
+  canvas.style.height = canvas.height + 'px'
+  canvas.hidden = true
+  pz = new PZcanvas(canvas, 3200, 2000)
+  canvas.onmousedown = onMouseDown
+  canvas.onmousemove = onMouseMove
+  canvas.onmouseup = onMouseUp
+  canvas.ontouchstart = onTouchStart
+  canvas.ontouchmove = onTouchMove
+  canvas.ontouchend = onTouchEnd
+  canvas.addEventListener('wheel', handleScroll, false)
+  canvas.style.border = '1px solid green'
+  canvas.hidden = false
+}
+
 let mode = 'edit' // edit or pan
 if (mode === 'edit') changeStrokeSize(0)
 else if (mode === 'pan') canvas.style.cursor = 'grab'
@@ -101,7 +113,11 @@ let dragStart = false
 let dragging = false
 let drawingPath
 
-canvas.onmousedown = evt => {
+menu.canvas.onmouseup = () => menu.choose()
+
+canvas.oncontextmenu = evt => evt.preventDefault()
+
+const onMouseDown = evt => {
   if (evt.buttons === 1) {
     dragStart = true
     dragging = false
@@ -117,11 +133,7 @@ canvas.onmousedown = evt => {
   }
 }
 
-menu.canvas.onmouseup = () => menu.choose()
-
-canvas.oncontextmenu = evt => evt.preventDefault()
-
-canvas.onmousemove = evt => {
+const onMouseMove = evt => {
   if (!dragStart) return
   dragging = true
   let x, y
@@ -139,7 +151,7 @@ canvas.onmousemove = evt => {
   }
 }
 
-canvas.onmouseup = evt => {
+const onMouseUp = evt => {
   if (!dragStart || evt.button !== 0) return
   if (mode === 'pan') canvas.style.cursor = 'grab'
   dragStart = false
@@ -204,7 +216,7 @@ function handleTwoFinger (evt) {
   touchCache.push(touch1, touch2)
 }
 
-canvas.ontouchstart = (evt) => {
+const onTouchStart = (evt) => {
   evt.preventDefault()
   // evt.stopPropagation()
   if (evt.targetTouches.length === 2) {
@@ -227,7 +239,7 @@ canvas.ontouchstart = (evt) => {
   }
 }
 
-canvas.ontouchmove = (evt) => {
+const onTouchMove = (evt) => {
   evt.preventDefault()
   if (evt.targetTouches.length === 2) {
     handleTwoFinger(evt)
@@ -264,7 +276,7 @@ canvas.ontouchmove = (evt) => {
   lastTouch = touch
 }
 
-canvas.ontouchend = (evt) => {
+const onTouchEnd = (evt) => {
   evt.preventDefault()
   // evt.stopPropagation()
   zoomCenter = null
@@ -297,8 +309,6 @@ function handleScroll (evt) {
   }
   pz.zoom(1 - delta / 10, evt.offsetX, evt.offsetY)
 }
-
-canvas.addEventListener('wheel', handleScroll, false)
 
 inputImage.onchange = function () {
   const file = inputImage.files[0]
