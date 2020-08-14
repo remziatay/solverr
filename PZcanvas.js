@@ -41,6 +41,24 @@ export class PZcanvas {
     this.update()
   }
 
+  resize () {
+    const { canvas } = this
+    canvas.style.width = canvas.style.height = ''
+    canvas.width = canvas.offsetWidth - canvas.offsetWidth % 2
+    canvas.height = canvas.offsetHeight - canvas.offsetHeight % 2
+    canvas.style.width = canvas.width + 'px'
+    canvas.style.height = canvas.height + 'px'
+    if (canvas.width > this.shadowCanvas.width) this.shadowCanvas.width = canvas.width
+    if (canvas.height > this.shadowCanvas.height) this.shadowCanvas.height = canvas.height
+    this.refX -= (canvas.width - this.width) / 2
+    this.refY -= (canvas.height - this.height) / 2
+    this.width = canvas.width
+    this.height = canvas.height
+    this.pan(-1, -1)
+    this.pan(1, 1)
+    this.update()
+  }
+
   canvasToAddPoint (x, y) {
     const { refX, panX, refY, panY, scale } = this
     return { x: (x + refX - panX) / scale, y: (y + refY - panY) / scale }
@@ -52,10 +70,11 @@ export class PZcanvas {
   */
 
   dose () {
+    const ctx = this.shadowCtx
     for (let i = 0; i <= this.shadowWidth + 2000; i += 50) {
       for (let j = 0; j <= this.shadowHeight + 2000; j += 50) {
-        this.shadowCtx.fillRect(i, j, 1, 1)
-        this.shadowCtx.fillText(i / 50 + ',' + j / 50, i, j)
+        ctx.fillRect(i, j, 1, 1)
+        ctx.fillText(i / 50 + ',' + j / 50, i, j)
       }
     }
   }

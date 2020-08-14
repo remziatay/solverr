@@ -8,6 +8,8 @@ const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
 const status = document.getElementById('status-text')
 const canvas = document.getElementById('main-canvas')
+/* const canvas = document.createElement('canvas')
+document.body.appendChild(canvas) */
 
 status.innerText = 'Connecting...'
 
@@ -30,7 +32,10 @@ const peer = new Peer(name1, {
   port: 443
 })
 
-window.addEventListener('resize', () => menu.resize())
+window.addEventListener('resize', () => {
+  menu.resize()
+  if (pz) pz.resize()
+})
 
 let pz
 const menu = new CircleContextMenu(200)
@@ -88,13 +93,12 @@ function ondata (data) {
 
 function initCanvas () {
   canvas.hidden = false
-  const rect = canvas.getBoundingClientRect()
-  canvas.width = rect.width
-  canvas.height = rect.height
+  canvas.width = canvas.offsetWidth - canvas.offsetWidth % 2
+  canvas.height = canvas.offsetHeight - canvas.offsetHeight % 2
   canvas.style.width = canvas.width + 'px'
   canvas.style.height = canvas.height + 'px'
   canvas.hidden = true
-  pz = new PZcanvas(canvas, 3200, 2000)
+  pz = new PZcanvas(canvas, 2400, 1600)
   canvas.onmousedown = onMouseDown
   canvas.onmousemove = onMouseMove
   canvas.onmouseup = onMouseUp

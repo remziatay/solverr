@@ -3,4 +3,5 @@
   margin: 0 auto;
   width: 80%;
   height: 80vh;
+  box-sizing: content-box;
 }
