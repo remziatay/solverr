@@ -137,7 +137,7 @@ export class PZcanvas {
       y *= window.devicePixelRatio
     }
     const { shadowCtx, width, height, shadowWidth, shadowHeight } = this
-    scale = this.trim(scale, 1 / (this.scale * (shadowWidth / width)), 20 / this.scale)
+    scale = this.trim(scale, 1 / (this.scale * Math.min(shadowWidth / width, shadowHeight / height)), 20 / this.scale)
     if (scale === 1) return
     clearTimeout(this.zoomDebounceTimeout)
     this.halfZoom = { ...this.halfZoom, x, y, zoom: this.halfZoom.zoom * scale }
