@@ -73,8 +73,8 @@ export class PZcanvas {
 
   dose () {
     const ctx = this.shadowCtx
-    for (let i = 0; i <= this.shadowWidth + 2000; i += 50) {
-      for (let j = 0; j <= this.shadowHeight + 2000; j += 50) {
+    for (let i = 0; i <= this.shadowWidth + 50; i += 50) {
+      for (let j = 0; j <= this.shadowHeight + 50; j += 50) {
         ctx.fillRect(i, j, 1, 1)
         ctx.fillText(i / 50 + ',' + j / 50, i, j)
       }
@@ -86,10 +86,10 @@ export class PZcanvas {
     requestAnimationFrame(() => {
       shadowCtx.save()
       shadowCtx.setTransform(1, 0, 0, 1, 0, 0)
+      shadowCtx.clearRect(0, 0, shadowWidth, shadowHeight)
       shadowCtx.translate(panX, panY)
       shadowCtx.scale(scale, scale)
       shadowCtx.lineWidth = 1 / scale
-      shadowCtx.clearRect(0, 0, shadowWidth, shadowHeight)
       this.dose()
       shadowCtx.strokeRect(0, 0, shadowWidth, shadowHeight)
       this.paths.forEach((path) => path.draw())

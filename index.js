@@ -201,7 +201,7 @@ function handleTwoFinger (evt) {
   else if (diffY1 < 0 && diffY2 < 0) panY = -Math.max(diffY1, diffY2)
   else zoomY = Math.abs(diffY1) + Math.abs(diffY2)
 
-  if (twoFingerGesture === null) twoFingerGesture = (panX ** 2 + panY ** 2 > 0.1) ? 'pan' : 'zoom'
+  if (!twoFingerGesture) twoFingerGesture = (panX ** 2 + panY ** 2 > 0.1) ? 'pan' : 'zoom'
 
   if (twoFingerGesture === 'zoom') {
     const diff = (touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2 -
