@@ -98,7 +98,7 @@ function initCanvas () {
   canvas.style.width = canvas.width + 'px'
   canvas.style.height = canvas.height + 'px'
   canvas.hidden = true
-  pz = new PZcanvas(canvas, 2400, 1600)
+  pz = new PZcanvas(canvas, 4800, 3200)
   canvas.onmousedown = onMouseDown
   canvas.onmousemove = onMouseMove
   canvas.onmouseup = onMouseUp
@@ -322,6 +322,7 @@ inputImage.onchange = function () {
 
 clearButton.onclick = () => {
   pz.clear()
+  pz.update()
   conn.send({
     type: 'clear'
   })

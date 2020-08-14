@@ -21,7 +21,13 @@ export class PZPath {
     return this
   }
 
-  add (x1, y1, x2, y2) {
+  add (x1, y1, x2, y2, event = true) {
+    if (window.devicePixelRatio !== 1 && event) {
+      x1 *= window.devicePixelRatio
+      y1 *= window.devicePixelRatio
+      x2 *= window.devicePixelRatio
+      y2 *= window.devicePixelRatio
+    }
     if (this.remote) {
       this.remote = false
       this.pzCanvas.tempPath = this

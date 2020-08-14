@@ -47,7 +47,7 @@ export class PZImage {
     this.y = (canvas.height - this.image.height * this.scale) / 2
     this.width = this.image.width * this.scale
     this.height = this.image.height * this.scale
-    this.r = 7 // Tolerance
+    this.r = 8 * window.devicePixelRatio ** 1.5// Tolerance
 
     this.drawFaded()
 
@@ -89,8 +89,8 @@ export class PZImage {
     const rect = evt.target.getBoundingClientRect()
     const { width, height, x, y, r } = this
     this.lastTouch = evt.touches[0]
-    const dx = evt.touches[0].clientX - rect.left - x
-    const dy = evt.touches[0].clientY - rect.top - y
+    const dx = window.devicePixelRatio * (evt.touches[0].clientX - rect.left) - x
+    const dy = window.devicePixelRatio * (evt.touches[0].clientY - rect.top) - y
     if ((dx - width) ** 2 + (dy - height) ** 2 <= r ** 2) this.mode = 'nwse-resize'
     else if (dx < width && dx > 0 && dy < height && dy > 0) this.mode = 'move'
     else this.mode = 'auto'
@@ -130,17 +130,19 @@ export class PZImage {
     const { image, width, height, x, y, r } = this
     const canvas = this.pzCanvas.canvas
     if (!this.dragStart) {
-      const dx = evt.offsetX - x
-      const dy = evt.offsetY - y
+      const dx = evt.offsetX * window.devicePixelRatio - x
+      const dy = evt.offsetY * window.devicePixelRatio - y
       if ((dx - width) ** 2 + (dy - height) ** 2 <= r ** 2) { canvas.style.cursor = this.mode = 'nwse-resize' } else if (dx < width && dx > 0 && dy < height && dy > 0) { canvas.style.cursor = this.mode = 'move' } else canvas.style.cursor = this.mode = 'auto'
       return
     }
     this.dragging = true
     if (this.mode === 'move') {
-      this.x += evt.movementX
-      this.y += evt.movementY
+      this.x += evt.movementX * window.devicePixelRatio
+      this.y += evt.movementY * window.devicePixelRatio
     } else if (this.mode === 'nwse-resize') {
-      if (Math.abs(evt.movementX) > Math.abs(evt.movementY)) { this.scale *= 1 + evt.movementX / width } else this.scale *= 1 + evt.movementY / height
+      if (Math.abs(evt.movementX) > Math.abs(evt.movementY)) {
+        this.scale *= 1 + (evt.movementX * window.devicePixelRatio) / width
+      } else this.scale *= 1 + (evt.movementY * window.devicePixelRatio) / height
       this.width = image.width * this.scale
       this.height = image.height * this.scale
     }

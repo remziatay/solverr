@@ -1,5 +1,7 @@
 export class PZcanvas {
   constructor (canvas, shadowWidth, shadowHeight) {
+    canvas.width *= window.devicePixelRatio
+    canvas.height *= window.devicePixelRatio
     this.width = canvas.width
     this.height = canvas.height
     this.shadowWidth = shadowWidth
@@ -12,11 +14,11 @@ export class PZcanvas {
     this.shadowCanvas.width = shadowWidth
     this.shadowCanvas.height = shadowHeight
     this.shadowCtx = this.shadowCanvas.getContext('2d')
+    this.trim = (num, min, max) => Math.min(max, Math.max(min, num))
 
     this.clear()
-    this.refresh()
-
-    this.trim = (num, min, max) => Math.min(max, Math.max(min, num))
+    if (window.devicePixelRatio !== 1) this.zoom(window.devicePixelRatio, this.width / 2, this.height / 2, false)
+    else this.update()
   }
 
   clear () {
@@ -37,8 +39,6 @@ export class PZcanvas {
       y: 0,
       zoom: 1
     }
-
-    this.update()
   }
 
   resize () {
@@ -48,6 +48,8 @@ export class PZcanvas {
     canvas.height = canvas.offsetHeight - canvas.offsetHeight % 2
     canvas.style.width = canvas.width + 'px'
     canvas.style.height = canvas.height + 'px'
+    canvas.width *= window.devicePixelRatio
+    canvas.height *= window.devicePixelRatio
     if (canvas.width > this.shadowCanvas.width) this.shadowCanvas.width = canvas.width
     if (canvas.height > this.shadowCanvas.height) this.shadowCanvas.height = canvas.height
     this.refX -= (canvas.width - this.width) / 2
@@ -96,7 +98,11 @@ export class PZcanvas {
     })
   }
 
-  pan (dx, dy) {
+  pan (dx, dy, event = true) {
+    if (window.devicePixelRatio !== 1 && event) {
+      dx *= window.devicePixelRatio
+      dy *= window.devicePixelRatio
+    }
     const { width, height, shadowWidth, shadowHeight, scale, refX, refY } = this
     dx = this.trim(dx, this.panX - refX, scale * shadowWidth - (refX + width) + this.panX)
     dy = this.trim(dy, this.panY - refY, scale * shadowHeight - (refY + height) + this.panY)
@@ -106,6 +112,7 @@ export class PZcanvas {
     this.refX += dx
     this.refY += dy
     if (Math.abs(dx - overX) >= 1 || Math.abs(dy - overY) >= 1) {
+      console.log('hey')
       const x = this.refX
       const y = this.refY
       this.refX = (shadowWidth - width) / 2
@@ -124,7 +131,11 @@ export class PZcanvas {
     this.refresh()
   }
 
-  zoom (scale, x, y) {
+  zoom (scale, x, y, event = true) {
+    if (window.devicePixelRatio !== 1 && event) {
+      x *= window.devicePixelRatio
+      y *= window.devicePixelRatio
+    }
     const { shadowCtx, width, height, shadowWidth, shadowHeight } = this
     scale = this.trim(scale, 1 / (this.scale * (shadowWidth / width)), 20 / this.scale)
     if (scale === 1) return
