@@ -17,12 +17,10 @@ export class PZcanvas {
     this.trim = (num, min, max) => Math.min(max, Math.max(min, num))
 
     this.clear()
-    if (window.devicePixelRatio !== 1) this.zoom(window.devicePixelRatio, this.width / 2, this.height / 2, false)
-    else this.update()
   }
 
   clear () {
-    const { width, height, shadowWidth, shadowHeight } = this
+    const { width, height, shadowWidth, shadowHeight, shadowCtx } = this
     this.paths = []
     this.tempPath = null
     this.scale = 1
@@ -39,6 +37,8 @@ export class PZcanvas {
       y: 0,
       zoom: 1
     }
+    shadowCtx.resetTransform()
+    this.update()
   }
 
   resize () {

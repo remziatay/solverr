@@ -228,7 +228,6 @@ inputImage.onchange = function () {
 
 clearButton.onclick = () => {
   pz.clear()
-  pz.update()
   conn.send({
     type: 'clear'
   })
