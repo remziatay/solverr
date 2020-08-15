@@ -3,6 +3,7 @@ import { CircleContextMenu } from './CircleContextMenu.js'
 import { PZcanvas } from './PZcanvas.js'
 import { PZPath } from './PZPath.js'
 import { PZImage } from './PZImage.js'
+import { TouchHandler } from './touchHandler.js'
 
 const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
@@ -91,6 +92,8 @@ function ondata (data) {
   else if (data.type === 'clear') pz.clear()
 }
 
+const touchHandler = new TouchHandler(500, 3)
+
 function initCanvas () {
   canvas.hidden = false
   canvas.width = canvas.offsetWidth - canvas.offsetWidth % 2
@@ -102,9 +105,9 @@ function initCanvas () {
   canvas.onmousedown = onMouseDown
   canvas.onmousemove = onMouseMove
   canvas.onmouseup = onMouseUp
-  canvas.ontouchstart = onTouchStart
-  canvas.ontouchmove = onTouchMove
-  canvas.ontouchend = onTouchEnd
+  canvas.ontouchstart = touchHandler.onTouchStart
+  canvas.ontouchmove = touchHandler.onTouchMove
+  canvas.ontouchend = touchHandler.onTouchEnd
   canvas.addEventListener('wheel', handleScroll, false)
   canvas.style.border = '1px solid green'
   canvas.hidden = false
@@ -168,138 +171,41 @@ const onMouseUp = evt => {
   dragging = false
 }
 
-const touchDuration = 500
-let touchTimer, lastTouch, zoomCenter, twoFingerGesture
-const touchCache = []
-
-function handleTwoFinger (evt) {
-  if (evt.targetTouches.length !== 2 || evt.changedTouches.length !== 2) return
-  const touch1 = evt.targetTouches[0]
-  const touch2 = evt.targetTouches[1]
-  let index1 = -1
-  let index2 = -1
-  touchCache.forEach((touch, i) => {
-    if (touch.identifier === touch1.identifier) index1 = i
-    else if (touch.identifier === touch2.identifier) index2 = i
-  })
-  if (index1 < 0 || index2 < 0) {
-    touchCache.length = 0
-    return
-  }
-  const diffX1 = touch1.clientX - touchCache[index1].clientX
-  const diffX2 = touch2.clientX - touchCache[index2].clientX
-  const diffY1 = touch1.clientY - touchCache[index1].clientY
-  const diffY2 = touch2.clientY - touchCache[index2].clientY
-  let panX, panY, zoomX, zoomY
-  panX = panY = zoomX = zoomY = 0
-
-  if (diffX1 > 0 && diffX2 > 0) panX = -Math.min(diffX1, diffX2)
-  else if (diffX1 < 0 && diffX2 < 0) panX = -Math.max(diffX1, diffX2)
-  else zoomX = Math.abs(diffX1) + Math.abs(diffX2)
-
-  if (diffY1 > 0 && diffY2 > 0) panY = -Math.min(diffY1, diffY2)
-  else if (diffY1 < 0 && diffY2 < 0) panY = -Math.max(diffY1, diffY2)
-  else zoomY = Math.abs(diffY1) + Math.abs(diffY2)
-
-  if (!twoFingerGesture) twoFingerGesture = (panX ** 2 + panY ** 2 > 0.1) ? 'pan' : 'zoom'
-
-  if (twoFingerGesture === 'zoom') {
-    const diff = (touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2 -
-    ((touchCache[index1].clientX - touchCache[index2].clientX) ** 2 +
-    (touchCache[index1].clientY - touchCache[index2].clientY) ** 2)
-    const zoom = (diff > 0 ? 1 : -1) * Math.hypot(zoomX, zoomY) * 0.01
-    if (!zoomCenter) {
-      zoomCenter = {}
-      zoomCenter.x = (touchCache[index1].clientX + touchCache[index2].clientX) / 2
-      zoomCenter.y = (touchCache[index1].clientY + touchCache[index2].clientY) / 2
+touchHandler.addGestureListener('drag',
+  (touch, lastTouch, evt) => {
+    const x = touch.clientX
+    const y = touch.clientY
+    switch (mode) {
+      case 'edit': {
+        const rect = evt.target.getBoundingClientRect()
+        drawingPath.add(lastTouch.clientX - rect.left, lastTouch.clientY - rect.top, x - rect.left, y - rect.top)
+        break
+      }
+      case 'pan':
+        pz.pan(lastTouch.clientX - x, lastTouch.clientY - y)
+        break
+      default:
+        break
     }
-    pz.zoom(1 + zoom, zoomCenter.x, zoomCenter.x)
-  } else if (twoFingerGesture === 'pan') pz.pan(panX, panY)
+  },
+  () => { if (mode === 'edit') drawingPath = new PZPath(pz, conn, strokeSize) },
+  () => { if (mode === 'edit') drawingPath.finish() }
+)
 
-  touchCache.length = 0
-  touchCache.push(touch1, touch2)
-}
+touchHandler.addGestureListener('longTouchDrag',
+  (_, __, evt) => menu.ontouchmove(evt),
+  (evt) => menu.show(evt.touches[0].clientX, evt.touches[0].clientY),
+  () => menu.choose()
+)
 
-const onTouchStart = (evt) => {
-  evt.preventDefault()
-  // evt.stopPropagation()
-  if (evt.targetTouches.length === 2) {
-    if (mode === 'edit') drawingPath.cancel()
-    touchCache.push(...evt.targetTouches)
-    clearTimeout(touchTimer)
-    touchTimer = null
-    dragStart = dragging = false
-    return
-  }
-  touchTimer = setTimeout(() => {
-    menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
-    touchTimer = null
-  }, touchDuration)
-  lastTouch = evt.touches[0]
-  if (evt.touches.length === 1) {
-    dragStart = true
-    dragging = false
-    if (mode === 'edit') drawingPath = new PZPath(pz, conn, strokeSize)
-  }
-}
+touchHandler.addGestureListener('twoFingerZoom',
+  (zoom, center) => pz.zoom(1 + zoom, center.x, center.y),
+  () => { if (mode === 'edit') drawingPath.cancel() }
+)
 
-const onTouchMove = (evt) => {
-  evt.preventDefault()
-  if (evt.targetTouches.length === 2) {
-    handleTwoFinger(evt)
-    return
-  }
-  const touch = evt.touches[0]
-  if (menu.visible) {
-    menu.ontouchmove(evt)
-    return
-  } else if (touchTimer) {
-    if ((lastTouch.clientX - touch.clientX) ** 2 + (lastTouch.clientY - touch.clientY) ** 2 > 9) {
-      clearTimeout(touchTimer)
-      touchTimer = null
-    } else return
-  }
-
-  if (!dragStart) return
-  dragging = true
-  let x, y
-  switch (mode) {
-    case 'edit': {
-      const rect = evt.target.getBoundingClientRect()
-      x = touch.clientX
-      y = touch.clientY
-      drawingPath.add(lastTouch.clientX - rect.left, lastTouch.clientY - rect.top, x - rect.left, y - rect.top)
-      break
-    }
-    case 'pan':
-      pz.pan(lastTouch.clientX - touch.clientX, lastTouch.clientY - touch.clientY)
-      break
-    default:
-      break
-  }
-  lastTouch = touch
-}
-
-const onTouchEnd = (evt) => {
-  evt.preventDefault()
-  // evt.stopPropagation()
-  zoomCenter = null
-  twoFingerGesture = null
-  if (menu.visible) {
-    menu.choose()
-    return
-  } else if (touchTimer) {
-    clearTimeout(touchTimer)
-    touchTimer = null
-  }
-
-  if (!dragStart) return
-  dragStart = false
-  if (mode === 'edit') {
-    drawingPath.finish()
-  }
-  dragging = false
-}
+touchHandler.addGestureListener('twoFingerDrag',
+  (panX, panY) => pz.pan(panX, panY)
+)
 
 const strokeSizeStep = 5
 function handleScroll (evt) {
