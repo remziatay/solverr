@@ -49,16 +49,17 @@ menu.addButton('Draw', () => {
   changeStrokeSize(0)
 })
 
-let strokeSize = 13
+let strokeSize = 10
 function changeStrokeSize (change) {
   strokeSize += change
-  strokeSize = Math.min(Math.max(strokeSize, 3), 128)
+  strokeSize = Math.min(Math.max(strokeSize, 1), 128)
   if (strokeSize < 5) {
     canvas.style.cursor = 'crosshair'
     return
   }
   const svg = `<svg width="${strokeSize}" height="${strokeSize}" xmlns="http://www.w3.org/2000/svg"><circle r="${strokeSize / 2 - 1}" cy="${strokeSize / 2}" cx="${strokeSize / 2}" stroke-width="1.5" stroke="black" fill="none"/></svg>`
   canvas.style.cursor = `url('data:image/svg+xml;utf8,${svg}') ${strokeSize / 2} ${strokeSize / 2}, auto`
+  canvas.focus()
 }
 
 // document.body.appendChild(pz.shadowCanvas);
@@ -207,14 +208,13 @@ touchHandler.addGestureListener('twoFingerDrag',
   (panX, panY) => pz.pan(panX, panY)
 )
 
-const strokeSizeStep = 5
 function handleScroll (evt) {
   evt.preventDefault()
   if (dragStart) return
   const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
 
   if (evt.ctrlKey && mode === 'edit') {
-    changeStrokeSize(evt.deltaY < 0 ? strokeSizeStep : -strokeSizeStep)
+    changeStrokeSize(evt.deltaY < 0 ? 2 : -2)
     return
   }
   pz.zoom(1 - delta / 10, evt.offsetX, evt.offsetY)
