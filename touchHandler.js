@@ -72,13 +72,12 @@ export class TouchHandler {
     }
 
     this.touchCache = [touch1, touch2]
-    this.twoFingerGesture = null
   }
 
   onTouchStart (evt) {
     evt.preventDefault()
     const { touchCache } = this
-    if (evt.targetTouches.length === 2) {
+    if (evt.targetTouches.length === 2 && (this.functions.twoFingerDrag || this.functions.twoFingerZoom)) {
       touchCache.push(...evt.targetTouches)
       clearTimeout(this.touchTimer)
       this.touchTimer = null
@@ -87,11 +86,13 @@ export class TouchHandler {
       this.functions.twoFingerZoom.forEach(({ start }) => start && start(evt))
       return
     }
-    this.touchTimer = setTimeout(() => {
-      this.longtouched = true
-      this.touchTimer = null
-      this.functions.longTouchDrag.forEach(({ start }) => start && start(evt))
-    }, this.touchDuration)
+    if (this.functions.longTouchDrag) {
+      this.touchTimer = setTimeout(() => {
+        this.longtouched = true
+        this.touchTimer = null
+        this.functions.longTouchDrag.forEach(({ start }) => start && start(evt))
+      }, this.touchDuration)
+    }
     this.lastTouch = evt.touches[0]
     if (evt.touches.length === 1) {
       this.dragStart = true
@@ -103,7 +104,7 @@ export class TouchHandler {
   onTouchMove (evt) {
     evt.preventDefault()
     const { lastTouch } = this
-    if (evt.targetTouches.length === 2) {
+    if (evt.targetTouches.length === 2 && (this.functions.twoFingerDrag || this.functions.twoFingerZoom)) {
       this.handleTwoFinger(evt)
       return
     }
