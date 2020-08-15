@@ -1,3 +1,5 @@
+import { TouchHandler } from './touchHandler.js'
+
 export class PZImage {
   constructor (pzCanvas, conn, remote = false) {
     this.pzCanvas = pzCanvas
@@ -5,6 +7,23 @@ export class PZImage {
     if (!remote) pzCanvas.tempPath = this
     this.conn = conn
     this.end = (evt) => this.finish(evt)
+    this.touchHandler = new TouchHandler()
+    this.touchHandler.addGestureListener('drag',
+      (touch, lastTouch, evt) => this.touchMove(touch, lastTouch, evt),
+      (evt) => this.touchStart(evt),
+      () => { if (this.mode === 'auto') this.finish() }
+    )
+    this.touchHandler.addGestureListener('twoFingerZoom',
+      (zoom, center, evt) => {
+        const rect = evt.target.getBoundingClientRect()
+        this.scale *= 1 + zoom
+        this.width = this.image.width * this.scale
+        this.height = this.image.height * this.scale
+        this.x -= ((center.x - rect.left) * window.devicePixelRatio - this.x) * zoom
+        this.y -= ((center.y - rect.top) * window.devicePixelRatio - this.y) * zoom
+        this.drawFaded()
+      }
+    )
   }
 
   from ({ base64Image, x, y, scale }) {
@@ -30,6 +49,7 @@ export class PZImage {
       this.oldTouchStart = this.pzCanvas.canvas.ontouchstart
       this.oldTouchMove = this.pzCanvas.canvas.ontouchmove
       this.oldTouchEnd = this.pzCanvas.canvas.ontouchend
+      this.oldWheel = this.pzCanvas.canvas.onwheel
       this.oldCursor = this.pzCanvas.canvas.style.cursor
 
       this.image = new Image()
@@ -58,9 +78,10 @@ export class PZImage {
     canvas.onmousedown = (evt) => this.newOnMouseDown(evt)
     canvas.onmousemove = (evt) => this.newOnMouseMove(evt)
     canvas.onmouseup = (evt) => this.newOnMouseUp(evt)
-    canvas.ontouchstart = (evt) => this.newOnTouchStart(evt)
-    canvas.ontouchmove = (evt) => this.newOnTouchMove(evt)
-    canvas.ontouchend = (evt) => this.newOnTouchEnd(evt)
+    canvas.ontouchstart = this.touchHandler.onTouchStart
+    canvas.ontouchmove = this.touchHandler.onTouchMove
+    canvas.ontouchend = this.touchHandler.onTouchEnd
+    canvas.onwheel = (evt) => this.newScroll(evt)
     document.addEventListener('click', this.end)
   }
 
@@ -83,12 +104,21 @@ export class PZImage {
     ctx.restore()
   }
 
-  newOnTouchStart (evt) {
+  newScroll (evt) {
     evt.preventDefault()
-    if (evt.touches.length !== 1) return
+    if (this.dragStart) return
+    const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
+    this.scale *= 1 - delta / 10
+    this.width = this.image.width * this.scale
+    this.height = this.image.height * this.scale
+    this.x -= (evt.offsetX * window.devicePixelRatio - this.x) * -delta / 10
+    this.y -= (evt.offsetY * window.devicePixelRatio - this.y) * -delta / 10
+    this.drawFaded()
+  }
+
+  touchStart (evt) {
     const rect = evt.target.getBoundingClientRect()
     const { width, height, x, y, r } = this
-    this.lastTouch = evt.touches[0]
     const dx = window.devicePixelRatio * (evt.touches[0].clientX - rect.left) - x
     const dy = window.devicePixelRatio * (evt.touches[0].clientY - rect.top) - y
     if ((dx - width) ** 2 + (dy - height) ** 2 <= r ** 2) this.mode = 'nwse-resize'
@@ -97,27 +127,14 @@ export class PZImage {
     this.newOnMouseDown({ buttons: 1 })
   }
 
-  newOnTouchMove (evt) {
-    evt.preventDefault()
-    if (evt.touches.length !== 1) return
-    const touch = evt.touches[0]
+  touchMove (touch, lastTouch, evt) {
     const rect = evt.target.getBoundingClientRect()
     this.newOnMouseMove({
       offsetX: touch.clientX - rect.left,
       offsetY: touch.clientY - rect.top,
-      movementX: touch.clientX - this.lastTouch.clientX,
-      movementY: touch.clientY - this.lastTouch.clientY
+      movementX: touch.clientX - lastTouch.clientX,
+      movementY: touch.clientY - lastTouch.clientY
     })
-    this.lastTouch = touch
-  }
-
-  newOnTouchEnd (evt) {
-    evt.preventDefault()
-    this.lastTouch = null
-    if (!this.dragStart) return
-    this.dragStart = false
-    if (this.mode === 'auto') this.finish()
-    this.dragging = false
   }
 
   newOnMouseDown (evt) {
@@ -178,6 +195,7 @@ export class PZImage {
     canvas.ontouchstart = this.oldTouchStart
     canvas.ontouchmove = this.oldTouchMove
     canvas.ontouchend = this.oldTouchEnd
+    canvas.onwheel = this.oldWheel
     canvas.style.cursor = this.oldCursor
     const p = this.pzCanvas.canvasToAddPoint(this.x, this.y)
     this.x = p.x

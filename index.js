@@ -109,7 +109,7 @@ function initCanvas () {
   canvas.ontouchstart = touchHandler.onTouchStart
   canvas.ontouchmove = touchHandler.onTouchMove
   canvas.ontouchend = touchHandler.onTouchEnd
-  canvas.addEventListener('wheel', handleScroll, false)
+  canvas.onwheel = handleScroll
   canvas.style.border = '1px solid green'
   canvas.hidden = false
 }
