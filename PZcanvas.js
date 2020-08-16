@@ -30,13 +30,7 @@ export class PZcanvas {
     this.panX = 0
     this.panY = 0
 
-    this.halfZoom = {
-      rx: this.refX,
-      ry: this.refY,
-      x: 0,
-      y: 0,
-      zoom: 1
-    }
+    this.halfZoom = { zoom: 1 }
     shadowCtx.resetTransform()
     this.update()
   }
@@ -83,6 +77,8 @@ export class PZcanvas {
 
   update () {
     const { shadowWidth, shadowHeight, shadowCtx, panX, panY, scale } = this
+    this.clearZoomTimeout()
+    this.halfZoom.zoom = 1
     requestAnimationFrame(() => {
       shadowCtx.save()
       shadowCtx.setTransform(1, 0, 0, 1, 0, 0)
@@ -107,12 +103,12 @@ export class PZcanvas {
     dx = this.trim(dx, this.panX - refX, scale * shadowWidth - (refX + width) + this.panX)
     dy = this.trim(dy, this.panY - refY, scale * shadowHeight - (refY + height) + this.panY)
     if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return
+    this.clearZoomTimeout()
     const overX = this.trim(dx, -refX, shadowWidth - width - refX)
     const overY = this.trim(dy, -refY, shadowHeight - height - refY)
     this.refX += dx
     this.refY += dy
     if (Math.abs(dx - overX) >= 1 || Math.abs(dy - overY) >= 1) {
-      console.log('hey')
       const x = this.refX
       const y = this.refY
       this.refX = (shadowWidth - width) / 2
@@ -126,9 +122,10 @@ export class PZcanvas {
       this.update()
     }
     // shadowCtx.translate(dx, dy); // NOT NECESSARY I GUESS
-    this.halfZoom.rx = this.refX
-    this.halfZoom.ry = this.refY
+    this.halfZoom.rx += dx / this.halfZoom.zoom
+    this.halfZoom.ry += dy / this.halfZoom.zoom
     this.refresh()
+    if (this.halfZoom.zoom !== 1) this.setZoomTimeout()
   }
 
   zoom (scale, x, y, event = true) {
@@ -136,11 +133,19 @@ export class PZcanvas {
       x *= window.devicePixelRatio
       y *= window.devicePixelRatio
     }
-    const { shadowCtx, width, height, shadowWidth, shadowHeight } = this
+    const { shadowCtx, width, height, shadowWidth, shadowHeight, halfZoom } = this
     scale = this.trim(scale, 1 / (this.scale * Math.min(shadowWidth / width, shadowHeight / height)), 20 / this.scale)
     if (scale === 1) return
-    clearTimeout(this.zoomDebounceTimeout)
-    this.halfZoom = { ...this.halfZoom, x, y, zoom: this.halfZoom.zoom * scale }
+    this.clearZoomTimeout()
+    if (halfZoom.zoom === 1) {
+      halfZoom.rx = this.refX + x * (1 - 1 / scale)
+      halfZoom.ry = this.refY + y * (1 - 1 / scale)
+      halfZoom.zoom = scale
+    } else {
+      halfZoom.rx += x * (1 - 1 / scale) / halfZoom.zoom
+      halfZoom.ry += y * (1 - 1 / scale) / halfZoom.zoom
+      halfZoom.zoom *= scale
+    }
     this.refresh()
     let pt = this.real2canvas(x, y)
     shadowCtx.scale(scale, scale)
@@ -160,14 +165,24 @@ export class PZcanvas {
     shadowCtx.restore()
     this.panX -= (pt2.x - pt.x) / this.scale
     this.panY -= (pt2.y - pt.y) / this.scale
+    this.setZoomTimeout()
+  }
 
+  setZoomTimeout () {
     this.zoomDebounceTimeout = setTimeout(() => {
       // panning and reversing so the overflow will be fixed
+      this.zoomDebounceTimeout = null
       this.halfZoom.zoom = 1
       this.pan(1, 1)
       this.pan(-1, -1)
       this.update()
-    }, 300)
+    }, 500)
+  }
+
+  clearZoomTimeout () {
+    if (!this.zoomDebounceTimeout) return
+    clearTimeout(this.zoomDebounceTimeout)
+    this.zoomDebounceTimeout = null
   }
 
   fixOverFlow () {
@@ -217,14 +232,12 @@ export class PZcanvas {
 
   refresh (tempControl = true) {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
-    const { rx, ry, x, y, zoom } = this.halfZoom
-    const hx = zoom === 1 ? 0 : (-refX + rx + x - x / zoom)
-    const hy = zoom === 1 ? 0 : (-refY + ry + y - y / zoom)
+    const { rx, ry, zoom } = this.halfZoom
     ctx.clearRect(0, 0, width, height)
     ctx.drawImage(
       shadowCanvas,
-      refX + hx,
-      refY + hy,
+      zoom === 1 ? refX : rx,
+      zoom === 1 ? refY : ry,
       width / zoom,
       height / zoom,
       0,
@@ -232,6 +245,6 @@ export class PZcanvas {
       width,
       height
     )
-    if (this.tempPath && tempControl) this.tempPath.draw(true)
+    if (this.tempPath && tempControl && zoom === 1) this.tempPath.draw(true)
   }
 }
