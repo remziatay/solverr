@@ -200,7 +200,7 @@ touchHandler.addGestureListener('longTouchDrag',
 )
 
 touchHandler.addGestureListener('twoFingerZoom',
-  (zoom, center) => pz.zoom(1 + zoom, center.x, center.y),
+  (zoom, center) => pz.zoom(1 + zoom * 0.005, center.x, center.y),
   () => { if (mode === 'edit') drawingPath.cancel() }
 )
 

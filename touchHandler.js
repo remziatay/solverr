@@ -27,7 +27,7 @@ export class TouchHandler {
 
   handleTwoFinger (evt) {
     const { touchCache } = this
-    if (evt.targetTouches.length !== 2 || evt.changedTouches.length !== 2) return
+    if (evt.targetTouches.length !== 2 || evt.changedTouches.length <= 0) return
     const touch1 = evt.targetTouches[0]
     const touch2 = evt.targetTouches[1]
     let index1 = -1
@@ -37,39 +37,32 @@ export class TouchHandler {
       else if (touch.identifier === touch2.identifier) index2 = i
     })
     if (index1 < 0 || index2 < 0) {
-      touchCache.length = 0
+      this.touchCache = []
       return
     }
     const diffX1 = touch1.clientX - touchCache[index1].clientX
     const diffX2 = touch2.clientX - touchCache[index2].clientX
     const diffY1 = touch1.clientY - touchCache[index1].clientY
     const diffY2 = touch2.clientY - touchCache[index2].clientY
-    let panX, panY, zoomX, zoomY
-    panX = panY = zoomX = zoomY = 0
+    let panX = 0
+    let panY = 0
 
     if (diffX1 > 0 && diffX2 > 0) panX = -Math.min(diffX1, diffX2)
     else if (diffX1 < 0 && diffX2 < 0) panX = -Math.max(diffX1, diffX2)
-    else zoomX = Math.abs(diffX1) + Math.abs(diffX2)
 
     if (diffY1 > 0 && diffY2 > 0) panY = -Math.min(diffY1, diffY2)
     else if (diffY1 < 0 && diffY2 < 0) panY = -Math.max(diffY1, diffY2)
-    else zoomY = Math.abs(diffY1) + Math.abs(diffY2)
 
-    if (!this.twoFingerGesture) this.twoFingerGesture = (panX ** 2 + panY ** 2 > 0.1) ? 'pan' : 'zoom'
-
-    if (this.twoFingerGesture === 'zoom') {
-      const diff = (touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2 -
-    ((touchCache[index1].clientX - touchCache[index2].clientX) ** 2 +
-    (touchCache[index1].clientY - touchCache[index2].clientY) ** 2)
-      const zoom = (diff > 0 ? 1 : -1) * Math.hypot(zoomX, zoomY) * 0.01
-      this.zoomCenter = this.zoomCenter || {
-        x: (touchCache[index1].clientX + touchCache[index2].clientX) / 2,
-        y: (touchCache[index1].clientY + touchCache[index2].clientY) / 2
-      }
-      this.functions.twoFingerZoom.forEach(func => func(zoom, this.zoomCenter, evt))
-    } else if (this.twoFingerGesture === 'pan') {
-      this.functions.twoFingerDrag.forEach(func => func(panX, panY, evt))
+    const zoom = (touch1.clientX - touch2.clientX) ** 2 + (touch1.clientY - touch2.clientY) ** 2 >
+    (touchCache[index1].clientX - touchCache[index2].clientX) ** 2 +
+    (touchCache[index1].clientY - touchCache[index2].clientY) ** 2
+    const scale = Math.hypot(diffX1 - diffX2, diffY1 - diffY2) * (zoom ? 1 : -1)
+    this.zoomCenter = {
+      x: (touchCache[index1].clientX + touchCache[index2].clientX) / 2,
+      y: (touchCache[index1].clientY + touchCache[index2].clientY) / 2
     }
+    this.functions.twoFingerZoom.forEach(func => func(scale, this.zoomCenter, evt))
+    this.functions.twoFingerDrag.forEach(func => func(panX, panY, evt))
 
     this.touchCache = [touch1, touch2]
   }
@@ -128,9 +121,6 @@ export class TouchHandler {
 
   onTouchEnd (evt) {
     evt.preventDefault()
-    // evt.stopPropagation()
-    this.zoomCenter = null
-    this.twoFingerGesture = null
     if (this.longtouched) {
       this.longtouched = false
       this.functions.longTouchDrag.forEach(({ end }) => end && end(evt))

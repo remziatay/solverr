@@ -63,11 +63,6 @@ export class PZcanvas {
     const { refX, panX, refY, panY, scale } = this
     return { x: (x + refX - panX) / scale, y: (y + refY - panY) / scale }
   }
-  /*
-  canvasToDrawPoint (x, y) {
-    return this.transformedPoint(this.refX + x, this.refY + y)
-  }
-  */
 
   dose () {
     const ctx = this.shadowCtx
@@ -106,7 +101,9 @@ export class PZcanvas {
     const { width, height, shadowWidth, shadowHeight, scale, refX, refY } = this
     dx = this.trim(dx, this.panX - refX, scale * shadowWidth - (refX + width) + this.panX)
     dy = this.trim(dy, this.panY - refY, scale * shadowHeight - (refY + height) + this.panY)
-    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return
+    if (Math.abs(dx) < 1) dx = 0
+    if (Math.abs(dy) < 1) dy = 0
+    if (!dx && !dy) return
     this.clearZoomTimeout()
     const overX = this.trim(dx, -refX, shadowWidth - width - refX)
     const overY = this.trim(dy, -refY, shadowHeight - height - refY)
@@ -121,11 +118,9 @@ export class PZcanvas {
       this.panX -= x - this.refX
       this.panY -= y - this.refY
 
-      // shadowCtx.translate(-(x - this.refX), -(y - this.refY));
       this.fixOverFlow()
       this.update()
     }
-    // shadowCtx.translate(dx, dy); // NOT NECESSARY I GUESS
     this.halfZoom.rx += dx / this.halfZoom.zoom
     this.halfZoom.ry += dy / this.halfZoom.zoom
     this.refresh()
@@ -194,24 +189,20 @@ export class PZcanvas {
     if (panX > 0) {
       this.refX -= this.panX
       this.panX = 0
-      // shadowCtx.translate(-this.panX, 0);
     }
     if (panY > 0) {
       this.refY -= this.panY
       this.panY = 0
-      // shadowCtx.translate(0, -this.panY);
     }
     if (panX < -this.shadowWidth * (this.scale - 1)) {
       const diff = this.panX + this.shadowWidth * (this.scale - 1)
       this.refX -= diff
       this.panX -= diff
-      // shadowCtx.translate(-diff, 0);
     }
     if (panY < -this.shadowHeight * (this.scale - 1)) {
       const diff = this.panY + this.shadowHeight * (this.scale - 1)
       this.refY -= diff
       this.panY -= diff
-      // shadowCtx.translate(0, -diff);
     }
   }
 
