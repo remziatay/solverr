@@ -32,8 +32,9 @@ export class PZImage {
     this.scale = scale
     this.image = new Image()
     this.image.onload = () => {
-      this.draw()
       this.pzCanvas.paths.push(this)
+      if (!this.pzCanvas.isReady()) return
+      this.draw()
       this.pzCanvas.refresh()
     }
     this.image.src = base64Image
@@ -89,6 +90,7 @@ export class PZImage {
     const ctx = this.pzCanvas.ctx
     const { image, width, height, x, y, r } = this
     if (refresh) this.pzCanvas.refresh(false)
+    if (!this.pzCanvas.isReady()) return
     ctx.save()
     ctx.globalAlpha = 0.5
     ctx.drawImage(image, 0, 0, image.width, image.height, x, y, width, height)
@@ -202,19 +204,22 @@ export class PZImage {
     this.y = p.y
     this.scale /= this.pzCanvas.scale
     try {
-      this.conn.send({
-        base64Image: this.base64Image,
-        x: this.x,
-        y: this.y,
-        scale: this.scale,
-        type: 'image'
-      })
+      if (!this.remote) {
+        this.conn.send({
+          base64Image: this.base64Image,
+          x: this.x,
+          y: this.y,
+          scale: this.scale,
+          type: 'image'
+        })
+      }
     } catch (err) {
       console.error(err)
     }
 
-    this.draw()
     this.pzCanvas.paths.push(this)
+    if (!this.pzCanvas.isReady()) return
+    this.draw()
     this.pzCanvas.refresh()
   }
 

@@ -43,6 +43,7 @@ export class PZPath {
     this.points.push({ x: p2.x, y: p2.y })
     this.tempPoints.push({ x1, y1, x2, y2 })
 
+    if (!this.pzCanvas.isReady()) return
     const ctx = this.pzCanvas.ctx
     ctx.save()
     ctx.strokeStyle = this.color
@@ -84,13 +85,15 @@ export class PZPath {
   finish () {
     const { scale, panX, panY, shadowCtx } = this.pzCanvas
     if (!this.remote) this.pzCanvas.tempPath = null
-    shadowCtx.save()
-    shadowCtx.setTransform(scale, 0, 0, scale, panX, panY)
-    this.draw()
-    shadowCtx.restore()
+    if (this.pzCanvas.isReady()) {
+      shadowCtx.save()
+      shadowCtx.setTransform(scale, 0, 0, scale, panX, panY)
+      this.draw()
+      shadowCtx.restore()
+    }
 
     try {
-      if (this.points.length) {
+      if (!this.remote && this.points.length) {
         this.conn.send({
           path: this.points,
           width: this.width,

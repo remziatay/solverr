@@ -55,6 +55,10 @@ export class PZcanvas {
     this.update()
   }
 
+  isReady () {
+    return this.halfZoom.zoom === 1
+  }
+
   canvasToAddPoint (x, y) {
     const { refX, panX, refY, panY, scale } = this
     return { x: (x + refX - panX) / scale, y: (y + refY - panY) / scale }
