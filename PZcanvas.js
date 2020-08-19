@@ -87,7 +87,7 @@ export class PZcanvas {
       shadowCtx.lineWidth = 1 / scale
       this.dose()
       shadowCtx.strokeRect(0, 0, shadowWidth, shadowHeight)
-      this.paths.forEach((path) => path.draw())
+      this.paths.forEach(draw => draw())
       shadowCtx.restore()
       this.refresh()
     })

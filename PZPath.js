@@ -104,8 +104,8 @@ export class PZPath {
     } catch (err) {
       console.error(err)
     }
-    this.points = []
-    this.pzCanvas.paths.push(this)
+
+    this.pzCanvas.paths.push(() => this.draw())
     this.pzCanvas.refresh()
   }
 
