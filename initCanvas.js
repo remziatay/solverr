@@ -4,6 +4,8 @@ import { CircleContextMenu } from './CircleContextMenu.js'
 import { PZPath } from './PZPath.js'
 
 const canvas = document.getElementById('main-canvas')
+const topController = document.getElementById('top-controller')
+const status = document.getElementById('status')
 let pz, conn
 let dragStart = false
 let dragging = false
@@ -32,7 +34,8 @@ export function initCanvas (connection) {
   canvas.ontouchend = touchHandler.onTouchEnd
   canvas.onwheel = handleScroll
   canvas.oncontextmenu = evt => evt.preventDefault()
-  canvas.style.border = '1px solid green'
+  topController.hidden = false
+  status.hidden = true
   canvas.hidden = false
   return pz
 }
