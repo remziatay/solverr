@@ -5,8 +5,6 @@ export class CircleContextMenu {
     this.ctx = this.canvas.getContext('2d')
     this.buttons = []
     this.buttonCount = 0
-    this.extraSize = 50
-    this.visible = false
     this.initCanvas()
   }
 
@@ -18,18 +16,20 @@ export class CircleContextMenu {
     style.left = style.top = 0
     style.position = 'fixed'
     style.zIndex = 9999
-    // style.boxSizing = 'border-box'; style.border = '5px solid red';
-    canvas.width = document.documentElement.clientWidth
-    canvas.height = document.documentElement.clientHeight
+
+    document.body.appendChild(this.canvas)
+    canvas.width = canvas.offsetWidth * window.devicePixelRatio
+    canvas.height = canvas.offsetHeight * window.devicePixelRatio
     canvas.onmousemove = (evt) => this.onmousemove(evt)
     canvas.oncontextmenu = (evt) => evt.preventDefault()
     this.hide()
-    document.body.appendChild(this.canvas)
   }
 
   resize () {
-    this.canvas.width = document.documentElement.clientWidth
-    this.canvas.height = document.documentElement.clientHeight
+    this.canvas.style.display = 'block'
+    this.canvas.width = this.canvas.offsetWidth * window.devicePixelRatio
+    this.canvas.height = this.canvas.offsetHeight * window.devicePixelRatio
+    this.hide()
   }
 
   ontouchmove (evt) {
@@ -40,8 +40,8 @@ export class CircleContextMenu {
     const oldChosen = this.chosen
     const r = this.r
 
-    const x = evt.clientX - this.x
-    const y = evt.clientY - this.y
+    const x = evt.clientX * window.devicePixelRatio - this.x
+    const y = evt.clientY * window.devicePixelRatio - this.y
 
     const deltaX = x - r
     const deltaY = r - y
@@ -154,9 +154,8 @@ export class CircleContextMenu {
   }
 
   show (x, y) {
-    this.visible = true
-    this.x = x - this.r
-    this.y = y - this.r
+    this.x = x * window.devicePixelRatio - this.r
+    this.y = y * window.devicePixelRatio - this.r
     this.ctx.setTransform(1, 0, 0, 1, this.x, this.y)
     this.redraw()
     this.redrawNeeded = false
@@ -165,7 +164,6 @@ export class CircleContextMenu {
 
   hide () {
     this.canvas.style.display = 'none'
-    this.visible = false
   }
 
   choose () {

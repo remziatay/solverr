@@ -37,13 +37,14 @@ export class PZcanvas {
 
   resize () {
     const { canvas } = this
+    const oddify = num => num - num % 2
     canvas.style.width = canvas.style.height = ''
-    canvas.width = canvas.offsetWidth - canvas.offsetWidth % 2
-    canvas.height = canvas.offsetHeight - canvas.offsetHeight % 2
-    canvas.style.width = canvas.width + 'px'
-    canvas.style.height = canvas.height + 'px'
-    canvas.width *= window.devicePixelRatio
-    canvas.height *= window.devicePixelRatio
+    const nWidth = oddify(canvas.offsetWidth)
+    const nHeight = oddify(canvas.offsetHeight)
+    canvas.style.width = nWidth + 'px'
+    canvas.style.height = nHeight + 'px'
+    canvas.width = oddify(Math.ceil(nWidth * window.devicePixelRatio))
+    canvas.height = oddify(Math.ceil(nHeight * window.devicePixelRatio))
     if (canvas.width > this.shadowCanvas.width) this.shadowCanvas.width = canvas.width
     if (canvas.height > this.shadowCanvas.height) this.shadowCanvas.height = canvas.height
     this.refX -= (canvas.width - this.width) / 2

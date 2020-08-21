@@ -149,10 +149,13 @@ function handleScroll (evt) {
 
 menu.canvas.onmouseup = () => menu.choose()
 
-window.addEventListener('resize', () => {
+window.addEventListener('resize', resize)
+matchMedia('(resolution: 0dppx)').addListener(resize)
+
+function resize () {
   menu.resize()
   if (pz) pz.resize()
-})
+}
 
 menu.addButton('Pan', () => {
   mode = 'pan'
