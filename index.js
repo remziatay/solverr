@@ -4,9 +4,16 @@ import { initCanvas } from './initCanvas.js'
 
 const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
-const status = document.getElementById('status-text')
+const statusText = document.getElementById('status-text')
+const copyButton = document.getElementById('copy-link')
 
-status.innerText = 'Connecting...'
+$('#status-text').tooltip({
+  title: 'Copied to clipboard',
+  placement: 'bottom',
+  trigger: 'manual'
+})
+
+statusText.innerText = 'Connecting...'
 
 let pz, conn
 let name1, name2
@@ -35,7 +42,28 @@ peer.on('open', function (id) {
     conn.on('open', () => connected())
   } else {
     const link = `${window.location.origin}${window.location.pathname.replace('//', '/')}#${name2}${name1}`
-    status.innerHTML = `Share link: <a href="${link}">${link}</a>`
+    statusText.innerHTML = `Share link: <a href="${link}">${link}</a>`
+    copyButton.innerText = navigator.share ? 'Share' : 'Copy'
+    copyButton.onclick = async () => {
+      try {
+        await navigator.share({
+          title: 'Solverr',
+          text: 'Join me on Solverr!',
+          url: link
+        })
+      } catch (err) {
+        const input = document.createElement('input')
+        input.value = link
+        document.body.appendChild(input)
+        input.select()
+        input.setSelectionRange(0, 99999)
+        document.execCommand('copy')
+        input.remove()
+        $('#status-text').tooltip('show')
+        setTimeout(() => $('#status-text').tooltip('hide'), 2500)
+      }
+    }
+    copyButton.hidden = false
   }
 })
 
@@ -43,7 +71,7 @@ peer.on('connection', connection => connected(connection))
 
 function connected (connection) {
   if (connection) conn = connection
-  status.innerText = 'Connected'
+  statusText.innerText = 'Connected'
   console.log('connected to peer')
   pz = initCanvas(conn)
   inputImage.onchange = setImage
