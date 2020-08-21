@@ -5,7 +5,6 @@ import { initCanvas } from './initCanvas.js'
 const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
 const statusText = document.getElementById('status-text')
-const copyButton = document.getElementById('copy-link')
 
 $('#status-text').tooltip({
   title: 'Copied to clipboard',
@@ -43,6 +42,7 @@ peer.on('open', function (id) {
   } else {
     const link = `${window.location.origin}${window.location.pathname.replace('//', '/')}#${name2}${name1}`
     statusText.innerHTML = `Share link: <a href="${link}">${link}</a>`
+    const copyButton = document.getElementById('copy-link')
     copyButton.innerText = navigator.share ? 'Share' : 'Copy'
     copyButton.onclick = async () => {
       try {

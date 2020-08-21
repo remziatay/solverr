@@ -3,3 +3,20 @@
   height: 70vh;
   box-sizing: content-box;
 }
+
+#main-container {
+  display: grid;
+  grid-template-columns: 10fr 1fr;
+  gap: 2px;
+  width: 100%;
+  padding: 0 0.5em;
+  margin: 0 auto;
+}
+
+#toolbox {
+  display: flex;
+  flex-direction: row;
+  background-color: aliceblue;
+  border-radius: 0.1em;
+  border-width: 2px;
+}
