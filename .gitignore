@@ -1,2 +1,8 @@
-/node_modules
-/*.json
+node_modules/
+.cache/
+dist/
+dist-dev/
+.env
+.DS_Store
+coverage/
+.vscode/

@@ -1,6 +1,10 @@
-import { PZPath } from './PZPath.js'
-import { PZImage } from './PZImage.js'
-import { initCanvas } from './initCanvas.js'
+import $ from 'jquery'
+import 'popper.js'
+import 'bootstrap'
+import Peer from 'peerjs'
+import { PZPath } from './PZPath'
+import { PZImage } from './PZImage'
+import { initCanvas } from './initCanvas'
 
 const inputImage = document.getElementById('input-image')
 const clearButton = document.getElementById('clear-button')
@@ -44,24 +48,23 @@ peer.on('open', function (id) {
     statusText.innerHTML = `Share link: <a href="${link}">${link}</a>`
     const copyButton = document.getElementById('copy-link')
     copyButton.innerText = navigator.share ? 'Share' : 'Copy'
-    copyButton.onclick = async () => {
-      try {
-        await navigator.share({
-          title: 'Solverr',
-          text: 'Join me on Solverr!',
-          url: link
-        })
-      } catch (err) {
-        const input = document.createElement('input')
-        input.value = link
-        document.body.appendChild(input)
-        input.select()
-        input.setSelectionRange(0, 99999)
-        document.execCommand('copy')
-        input.remove()
-        $('#status-text').tooltip('show')
-        setTimeout(() => $('#status-text').tooltip('hide'), 2500)
-      }
+    const copyToClipBoard = () => {
+      const input = document.createElement('input')
+      input.value = link
+      document.body.appendChild(input)
+      input.select()
+      input.setSelectionRange(0, 99999)
+      document.execCommand('copy')
+      input.remove()
+      $('#status-text').tooltip('show')
+      setTimeout(() => $('#status-text').tooltip('hide'), 2500)
+    }
+    copyButton.onclick = !navigator.share ? copyToClipBoard : () => {
+      navigator.share({
+        title: 'Solverr',
+        text: 'Join me on Solverr!',
+        url: link
+      }).catch(copyToClipBoard)
     }
     copyButton.hidden = false
   }

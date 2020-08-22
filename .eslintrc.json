@@ -1,0 +1,21 @@
+{
+  "env": {
+    "browser": true,
+    "es2020": true,
+    "jquery": true
+  },
+  "extends": ["plugin:react/recommended", "standard"],
+  "parser": "babel-eslint",
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    },
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "plugins": ["react"],
+  "rules": {},
+  "globals": {
+    "Peer": "readonly"
+  }
+}
