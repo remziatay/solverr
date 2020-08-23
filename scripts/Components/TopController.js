@@ -8,11 +8,14 @@ export default class TopController extends React.Component {
     return (
       <div className="container-md mb-2">
         <div className="row" id="top-controller" hidden>
-          <ImageInput/>
-          <ClearButton/>
+          <ImageInput setImage={this.props.setImage}/>
+          <ClearButton clear={this.props.clear}/>
         </div>
 
-        <Status/>
+        <Status
+          statusText={this.props.statusText}
+          share={this.props.share}
+          link={this.props.link}/>
       </div>
     )
   }
