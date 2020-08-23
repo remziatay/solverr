@@ -6,6 +6,7 @@ import { PZPath } from './PZPath.js'
 const canvas = document.getElementById('main-canvas')
 const topController = document.getElementById('top-controller')
 const status = document.getElementById('status')
+const mainContainer = document.getElementById('main-container')
 let pz, conn
 let dragStart = false
 let dragging = false
@@ -19,12 +20,12 @@ const menu = new CircleContextMenu(200)
 
 export function initCanvas (connection) {
   conn = connection
-  canvas.hidden = false
+  mainContainer.hidden = false
   canvas.width = canvas.offsetWidth - canvas.offsetWidth % 2
   canvas.height = canvas.offsetHeight - canvas.offsetHeight % 2
   canvas.style.width = canvas.width + 'px'
   canvas.style.height = canvas.height + 'px'
-  canvas.hidden = true
+  mainContainer.hidden = true
   pz = new PZcanvas(canvas, 4800, 3200)
   canvas.onmousedown = onMouseDown
   canvas.onmousemove = onMouseMove
@@ -36,7 +37,7 @@ export function initCanvas (connection) {
   canvas.oncontextmenu = evt => evt.preventDefault()
   topController.hidden = false
   status.hidden = true
-  canvas.hidden = false
+  mainContainer.hidden = false
   return pz
 }
 
