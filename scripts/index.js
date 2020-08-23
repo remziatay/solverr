@@ -1,6 +1,7 @@
 import $ from 'jquery'
 import 'popper.js'
 import 'bootstrap'
+import './App'
 import Peer from 'peerjs'
 import { PZPath } from './PZPath'
 import { PZImage } from './PZImage'

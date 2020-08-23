@@ -3,7 +3,12 @@
     "browser": true,
     "es2020": true
   },
-  "extends": ["plugin:react/recommended", "standard"],
+  "extends": [
+    "standard",
+    "plugin:import/errors",
+    "plugin:react/recommended",
+    "plugin:jsx-a11y/recommended"
+  ],
   "parser": "babel-eslint",
   "parserOptions": {
     "ecmaFeatures": {
@@ -12,6 +17,13 @@
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": ["react"],
-  "rules": {}
+  "plugins": ["import", "react", "jsx-a11y"],
+  "rules": {
+    "react/prop-types": 0
+  },
+  "settings": {
+    "react": {
+      "version": "detect"
+    }
+  }
 }
