@@ -34,10 +34,10 @@ export default class Status extends React.Component {
 
   render () {
     return (
-      <div className="row" id="status">
+      <div className="row">
         <div className="col-sm-12 text-center text-truncate">
           <span className="font-weight-bolder">Status:</span>
-          <span id="status-text" className="text-wrap">
+          <span className="text-wrap">
             {this.props.statusText}
             {this.props.share && <a href={this.props.link}>{this.props.link}</a>}
           </span>

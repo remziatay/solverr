@@ -6,6 +6,7 @@ export class PZImage {
     this.remote = remote
     if (!remote) pzCanvas.tempPath = this
     this.conn = conn
+    this.setCursor = () => true
     this.end = (evt) => this.finish(evt)
     this.touchHandler = new TouchHandler()
     this.touchHandler.addGestureListener('drag',
@@ -26,6 +27,11 @@ export class PZImage {
     )
   }
 
+  after (callback) {
+    this.finally = callback
+    return this
+  }
+
   from ({ base64Image, x, y, scale }) {
     this.x = x
     this.y = y
@@ -44,13 +50,6 @@ export class PZImage {
     const reader = new FileReader()
     reader.onloadend = () => {
       this.base64Image = reader.result
-      this.oldMouseDown = this.pzCanvas.canvas.onmousedown
-      this.oldMouseMove = this.pzCanvas.canvas.onmousemove
-      this.oldMouseUp = this.pzCanvas.canvas.onmouseup
-      this.oldTouchStart = this.pzCanvas.canvas.ontouchstart
-      this.oldTouchMove = this.pzCanvas.canvas.ontouchmove
-      this.oldTouchEnd = this.pzCanvas.canvas.ontouchend
-      this.oldWheel = this.pzCanvas.canvas.onwheel
       this.oldCursor = this.pzCanvas.canvas.style.cursor
 
       this.image = new Image()
@@ -58,6 +57,7 @@ export class PZImage {
       this.image.src = URL.createObjectURL(file)
     }
     reader.readAsDataURL(file)
+    return this
   }
 
   onImageLoad () {
@@ -76,14 +76,19 @@ export class PZImage {
     this.dragging = false
     this.mode = 'end'
 
-    canvas.onmousedown = (evt) => this.newOnMouseDown(evt)
-    canvas.onmousemove = (evt) => this.newOnMouseMove(evt)
-    canvas.onmouseup = (evt) => this.newOnMouseUp(evt)
-    canvas.ontouchstart = this.touchHandler.onTouchStart
-    canvas.ontouchmove = this.touchHandler.onTouchMove
-    canvas.ontouchend = this.touchHandler.onTouchEnd
-    canvas.onwheel = (evt) => this.newScroll(evt)
     document.addEventListener('click', this.end)
+  }
+
+  getNewListeners () {
+    return {
+      onMouseDown: (evt) => this.newOnMouseDown(evt),
+      onMouseMove: (evt) => this.newOnMouseMove(evt),
+      onMouseUp: (evt) => this.newOnMouseUp(evt),
+      onTouchStart: this.touchHandler.onTouchStart,
+      onTouchMove: this.touchHandler.onTouchMove,
+      onTouchEnd: this.touchHandler.onTouchEnd,
+      onWheel: (evt) => this.newScroll(evt)
+    }
   }
 
   drawFaded (refresh = true) {
@@ -113,8 +118,8 @@ export class PZImage {
     this.scale *= 1 - delta / 10
     this.width = this.image.width * this.scale
     this.height = this.image.height * this.scale
-    this.x -= (evt.offsetX * window.devicePixelRatio - this.x) * -delta / 10
-    this.y -= (evt.offsetY * window.devicePixelRatio - this.y) * -delta / 10
+    this.x -= (evt.nativeEvent.offsetX * window.devicePixelRatio - this.x) * -delta / 10
+    this.y -= (evt.nativeEvent.offsetY * window.devicePixelRatio - this.y) * -delta / 10
     this.drawFaded()
   }
 
@@ -132,8 +137,10 @@ export class PZImage {
   touchMove (touch, lastTouch, evt) {
     const rect = evt.target.getBoundingClientRect()
     this.newOnMouseMove({
-      offsetX: touch.clientX - rect.left,
-      offsetY: touch.clientY - rect.top,
+      nativeEvent: {
+        offsetX: touch.clientX - rect.left,
+        offsetY: touch.clientY - rect.top
+      },
       movementX: touch.clientX - lastTouch.clientX,
       movementY: touch.clientY - lastTouch.clientY
     })
@@ -147,11 +154,19 @@ export class PZImage {
 
   newOnMouseMove (evt) {
     const { image, width, height, x, y, r } = this
-    const canvas = this.pzCanvas.canvas
     if (!this.dragStart) {
-      const dx = evt.offsetX * window.devicePixelRatio - x
-      const dy = evt.offsetY * window.devicePixelRatio - y
-      if ((dx - width) ** 2 + (dy - height) ** 2 <= r ** 2) { canvas.style.cursor = this.mode = 'nwse-resize' } else if (dx < width && dx > 0 && dy < height && dy > 0) { canvas.style.cursor = this.mode = 'move' } else canvas.style.cursor = this.mode = 'auto'
+      const dx = evt.nativeEvent.offsetX * window.devicePixelRatio - x
+      const dy = evt.nativeEvent.offsetY * window.devicePixelRatio - y
+      if ((dx - width) ** 2 + (dy - height) ** 2 <= r ** 2) {
+        this.setCursor('nwse-resize')
+        this.mode = 'nwse-resize'
+      } else if (dx < width && dx > 0 && dy < height && dy > 0) {
+        this.setCursor('move')
+        this.mode = 'move'
+      } else {
+        this.setCursor('auto')
+        this.mode = 'auto'
+      }
       return
     }
     this.dragging = true
@@ -191,14 +206,8 @@ export class PZImage {
     if (evt && evt.target === canvas) return
     if (!this.remote) this.pzCanvas.tempPath = null
     document.removeEventListener('click', this.end)
-    canvas.onmousedown = this.oldMouseDown
-    canvas.onmousemove = this.oldMouseMove
-    canvas.onmouseup = this.oldMouseUp
-    canvas.ontouchstart = this.oldTouchStart
-    canvas.ontouchmove = this.oldTouchMove
-    canvas.ontouchend = this.oldTouchEnd
-    canvas.onwheel = this.oldWheel
-    canvas.style.cursor = this.oldCursor
+    this.finally()
+    this.setCursor(this.oldCursor)
     const p = this.pzCanvas.canvasToAddPoint(this.x, this.y)
     this.x = p.x
     this.y = p.y

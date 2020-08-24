@@ -3,7 +3,6 @@ import Peer from 'peerjs'
 import Header from './Components/Header'
 import TopController from './Components/TopController'
 import CanvasContainer from './Components/CanvasContainer'
-import { PZPath } from './PZPath'
 import { PZImage } from './PZImage'
 
 export default class App extends React.Component {
@@ -11,7 +10,8 @@ export default class App extends React.Component {
 
   state = {
     statusText: 'Connecting',
-    shareLink: false
+    shareLink: false,
+    ready: false
   }
 
   componentDidMount () {
@@ -25,19 +25,10 @@ export default class App extends React.Component {
       if (connection) this.conn = connection
       this.setState({
         statusText: 'Connected',
-        shareLink: false
+        shareLink: false,
+        ready: 'true'
       })
       console.log('connected to peer')
-      import('./initCanvas').then(module => {
-        this.pz = module.initCanvas(this.conn)
-        this.conn.on('data', ondata)
-      })
-    }
-
-    const ondata = data => {
-      if (data.type === 'path') new PZPath(this.pz, this.conn).from(data).finish()
-      else if (data.type === 'image') new PZImage(this.pz, this.conn, true).from(data)
-      else if (data.type === 'clear') this.pz.clear()
     }
 
     peer.on('open', id => {
@@ -56,10 +47,16 @@ export default class App extends React.Component {
     peer.on('connection', connection => connected(connection))
   }
 
+  setPZ = pz => {
+    this.pz = pz
+  }
+
   setImage = evt => {
     const file = evt.target.files[0]
     if (!file.type.match(/image-*/)) return
-    new PZImage(this.pz, this.conn).start(file)
+    this.setState({
+      imageAdding: new PZImage(this.pz, this.conn).after(() => { this.setState({ imageAdding: null }) }).start(file)
+    })
   }
 
   clear = () => {
@@ -78,8 +75,9 @@ export default class App extends React.Component {
           clear={this.clear}
           statusText={this.state.statusText}
           share={this.state.shareLink}
-          link={this.link}/>
-        <CanvasContainer/>
+          link={this.link}
+          ready={this.state.ready}/>
+        {this.state.ready && <CanvasContainer connection={this.conn} setPZ={this.setPZ} image={this.state.imageAdding}/>}
       </>
     )
   }
