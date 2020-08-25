@@ -61,8 +61,7 @@ export default class Canvas extends React.Component {
         onTouchStart: this.touchHandler.onTouchStart,
         onTouchMove: this.touchHandler.onTouchMove,
         onTouchEnd: this.touchHandler.onTouchEnd,
-        onWheel: this.handleScroll,
-        onContextMenu: evt => evt.preventDefault()
+        onWheel: this.handleScroll
       },
       strokeSize: 10,
       cursor: 'auto'
@@ -71,6 +70,7 @@ export default class Canvas extends React.Component {
   }
 
   onMouseDown = evt => {
+    evt.preventDefault()
     if (evt.buttons === 1) {
       this.dragStart = true
       this.dragging = false
@@ -118,7 +118,7 @@ export default class Canvas extends React.Component {
   }
 
   handleScroll = evt => {
-    evt.preventDefault()
+    evt = evt.nativeEvent
     if (this.dragStart) return
     const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
 
@@ -126,7 +126,7 @@ export default class Canvas extends React.Component {
       this.changeStrokeSize(evt.deltaY < 0 ? 2 : -2)
       return
     }
-    this.pz.zoom(1 - delta / 10, evt.nativeEvent.offsetX, evt.nativeEvent.offsetY)
+    this.pz.zoom(1 - delta / 10, evt.offsetX, evt.offsetY)
   }
 
   changeStrokeSize = change => {
@@ -167,6 +167,11 @@ export default class Canvas extends React.Component {
     this.pz = new PZcanvas(canvas, 4800, 3200)
     if (this.mode === 'edit') this.changeStrokeSize(0)
     else if (this.mode === 'pan') this.setState({ cursor: 'grab' })
+    // React can't prevent these for some reason. That's why preventing in native listeners
+    this.preventDef = evt => evt.preventDefault()
+    canvas.addEventListener('wheel', this.preventDef)
+    canvas.addEventListener('contextmenu', this.preventDef)
+    canvas.addEventListener('touchstart', this.preventDef)
 
     window.addEventListener('resize', this.resize)
     matchMedia('(resolution: 0dppx)').addListener(this.resize)
@@ -185,6 +190,13 @@ export default class Canvas extends React.Component {
     })
 
     this.props.connection.on('data', this.ondata)
+  }
+
+  componentWillUnmount () {
+    const canvas = this.canvasRef.current
+    canvas.removeEventListener('wheel', this.preventDef)
+    canvas.removeEventListener('contextmenu', this.preventDef)
+    canvas.removeEventListener('touchstart', this.preventDef)
   }
 
   ondata = data => {
@@ -206,7 +218,6 @@ export default class Canvas extends React.Component {
     return (
       <canvas
         {...listeners}
-        onContextMenu = {evt => evt.preventDefault()}
         ref={this.canvasRef}
         id='main-canvas'
         width={this.state.width}

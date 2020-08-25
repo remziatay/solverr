@@ -68,7 +68,7 @@ export class TouchHandler {
   }
 
   onTouchStart (evt) {
-    evt.preventDefault()
+    if (!evt.persist) evt.preventDefault() // If not React
     const { touchCache } = this
     if (evt.targetTouches.length === 2 && (this.functions.twoFingerDrag || this.functions.twoFingerZoom)) {
       touchCache.push(...evt.targetTouches)
@@ -80,6 +80,7 @@ export class TouchHandler {
       return
     }
     if (this.functions.longTouchDrag) {
+      evt.persist?.() // For React event to persist async
       this.touchTimer = setTimeout(() => {
         this.longtouched = true
         this.touchTimer = null
@@ -95,7 +96,6 @@ export class TouchHandler {
   }
 
   onTouchMove (evt) {
-    evt.preventDefault()
     const { lastTouch } = this
     if (evt.targetTouches.length === 2 && (this.functions.twoFingerDrag || this.functions.twoFingerZoom)) {
       this.handleTwoFinger(evt)
@@ -120,7 +120,6 @@ export class TouchHandler {
   }
 
   onTouchEnd (evt) {
-    evt.preventDefault()
     if (this.longtouched) {
       this.longtouched = false
       this.functions.longTouchDrag.forEach(({ end }) => end && end(evt))

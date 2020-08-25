@@ -17,6 +17,7 @@ export class PZImage {
     this.touchHandler.addGestureListener('twoFingerZoom',
       (zoom, center, evt) => {
         const rect = evt.target.getBoundingClientRect()
+        zoom *= 0.005
         this.scale *= 1 + zoom
         this.width = this.image.width * this.scale
         this.height = this.image.height * this.scale
