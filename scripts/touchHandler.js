@@ -74,7 +74,7 @@ export class TouchHandler {
       touchCache.push(...evt.targetTouches)
       clearTimeout(this.touchTimer)
       this.touchTimer = null
-      this.dragStart = this.dragging = false
+      // this.dragStart = this.dragging = false
       this.functions.twoFingerDrag.forEach(({ start }) => start && start(evt))
       this.functions.twoFingerZoom.forEach(({ start }) => start && start(evt))
       return
@@ -130,6 +130,10 @@ export class TouchHandler {
       this.touchTimer = null
     }
 
+    if (evt.targetTouches.length) {
+      this.lastTouch = evt.touches[0]
+      return
+    }
     if (!this.dragStart) return
     this.dragStart = false
     this.functions.drag.forEach(({ end }) => end && end(evt))

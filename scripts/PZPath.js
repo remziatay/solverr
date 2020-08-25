@@ -111,9 +111,6 @@ export class PZPath {
 
   cancel () {
     if (!this.remote) this.pzCanvas.tempPath = null
-    this.path = new Path2D()
-    this.points = []
-    this.tempPoints = []
     this.pzCanvas.refresh()
   }
 }

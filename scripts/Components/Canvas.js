@@ -21,6 +21,7 @@ export default class Canvas extends React.Component {
         const y = touch.clientY
         switch (this.mode) {
           case 'edit': {
+            if (!this.drawingPath) break
             const rect = evt.target.getBoundingClientRect()
             this.drawingPath.add(lastTouch.clientX - rect.left, lastTouch.clientY - rect.top, x - rect.left, y - rect.top)
             break
@@ -46,7 +47,12 @@ export default class Canvas extends React.Component {
 
     this.touchHandler.addGestureListener('twoFingerZoom',
       (zoom, center) => this.pz.zoom(1 + zoom * 0.005, center.x, center.y),
-      () => { if (this.mode === 'edit') this.drawingPath.cancel() }
+      () => {
+        if (this.mode === 'edit') {
+          this.drawingPath.cancel()
+          this.drawingPath = null
+        }
+      }
     )
 
     this.touchHandler.addGestureListener('twoFingerDrag',
@@ -164,7 +170,7 @@ export default class Canvas extends React.Component {
   componentDidMount () {
     const canvas = this.canvasRef.current
     this.resize()
-    this.pz = new PZcanvas(canvas, 4800, 3200)
+    this.pz = new PZcanvas(canvas, 6400, 6400)
     if (this.mode === 'edit') this.changeStrokeSize(0)
     else if (this.mode === 'pan') this.setState({ cursor: 'grab' })
     // React can't prevent these for some reason. That's why preventing in native listeners
