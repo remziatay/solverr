@@ -36,7 +36,7 @@ export default class Canvas extends React.Component {
       () => {
         if (this.mode === 'edit') this.drawingPath = new PZPath(this.pz, this.props.connection, this.state.strokeSize)
       },
-      () => { if (this.mode === 'edit') this.drawingPath.finish() }
+      () => { if (this.mode === 'edit') this.drawingPath?.finish() }
     )
 
     this.touchHandler.addGestureListener('longTouchDrag',

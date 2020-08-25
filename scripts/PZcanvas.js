@@ -37,15 +37,13 @@ export class PZcanvas {
 
   resize () {
     const canvas = this.canvas
-    console.log('resize', canvas.width)
     if (canvas.width > this.shadowCanvas.width) this.shadowCanvas.width = canvas.width
     if (canvas.height > this.shadowCanvas.height) this.shadowCanvas.height = canvas.height
     this.refX = Math.round(this.refX - (canvas.width - this.width) / 2)
     this.refY = Math.round(this.refY - (canvas.height - this.height) / 2)
     this.width = canvas.width
     this.height = canvas.height
-    this.pan(-1, -1)
-    this.pan(1, 1)
+    if (this.pan(-1, -1) || this.pan(1, 1)) return
     this.update()
   }
 
@@ -114,6 +112,7 @@ export class PZcanvas {
 
       this.fixOverFlow()
       this.update()
+      return true
     }
     this.halfZoom.rx += dx / this.halfZoom.zoom
     this.halfZoom.ry += dy / this.halfZoom.zoom
@@ -166,8 +165,7 @@ export class PZcanvas {
       // panning and reversing so the overflow will be fixed
       this.zoomDebounceTimeout = null
       this.halfZoom.zoom = 1
-      this.pan(1, 1)
-      this.pan(-1, -1)
+      if (this.pan(1, 1) || this.pan(-1, -1)) return
       this.update()
     }, 500)
   }
@@ -223,6 +221,7 @@ export class PZcanvas {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
     const { rx, ry, zoom } = this.halfZoom
     ctx.clearRect(0, 0, width, height)
+    // ctx.imageSmoothingQuality = 'high'
     ctx.drawImage(
       shadowCanvas,
       Math.round(zoom === 1 ? refX : rx),
