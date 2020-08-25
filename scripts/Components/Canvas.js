@@ -148,15 +148,22 @@ export default class Canvas extends React.Component {
 
   resize = () => {
     this.menu.resize()
-    if (this.pz) this.pz.resize()
+    const canvas = this.canvasRef.current
+    const { width, height } = canvas.style
+    canvas.style.width = canvas.style.height = ''
+    const { offsetWidth, offsetHeight } = canvas
+    Object.assign(canvas.style, { width, height })
+    this.setState({
+      styleWidth: Math.round(offsetWidth * window.devicePixelRatio) / window.devicePixelRatio + 'px',
+      styleHeight: Math.round(offsetHeight * window.devicePixelRatio) / window.devicePixelRatio + 'px',
+      width: Math.round(offsetWidth * window.devicePixelRatio),
+      height: Math.round(offsetHeight * window.devicePixelRatio)
+    }, () => this.pz.resize())
   }
 
   componentDidMount () {
     const canvas = this.canvasRef.current
-    canvas.width = canvas.offsetWidth - canvas.offsetWidth % 2
-    canvas.height = canvas.offsetHeight - canvas.offsetHeight % 2
-    canvas.style.width = canvas.width + 'px'
-    canvas.style.height = canvas.height + 'px'
+    this.resize()
     this.pz = new PZcanvas(canvas, 4800, 3200)
     if (this.mode === 'edit') this.changeStrokeSize(0)
     else if (this.mode === 'pan') this.setState({ cursor: 'grab' })
@@ -187,17 +194,24 @@ export default class Canvas extends React.Component {
   }
 
   render () {
-    const style = { cursor: this.state.cursor }
+    const style = {
+      cursor: this.state.cursor,
+      width: this.state.styleWidth,
+      height: this.state.styleHeight
+    }
+
     if (this.props.image?.setCursor()) this.props.image.setCursor = cursor => cursor && this.setState({ cursor })
     const listeners = { ...this.state.listeners, ...this.props.image?.getNewListeners() }
 
     return (
       <canvas
-        style={style}
         {...listeners}
         onContextMenu = {evt => evt.preventDefault()}
         ref={this.canvasRef}
         id='main-canvas'
+        width={this.state.width}
+        height={this.state.height}
+        style={style}
         className="shadow border border-dark"/>
     )
   }

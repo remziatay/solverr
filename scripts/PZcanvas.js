@@ -25,8 +25,8 @@ export class PZcanvas {
     this.tempPath = null
     this.scale = 1
 
-    this.refX = (shadowWidth - width) / 2
-    this.refY = (shadowHeight - height) / 2
+    this.refX = Math.round((shadowWidth - width) / 2)
+    this.refY = Math.round((shadowHeight - height) / 2)
     this.panX = 0
     this.panY = 0
 
@@ -36,19 +36,12 @@ export class PZcanvas {
   }
 
   resize () {
-    const { canvas } = this
-    const oddify = num => num - num % 2
-    canvas.style.width = canvas.style.height = ''
-    const nWidth = oddify(canvas.offsetWidth)
-    const nHeight = oddify(canvas.offsetHeight)
-    canvas.style.width = nWidth + 'px'
-    canvas.style.height = nHeight + 'px'
-    canvas.width = oddify(Math.ceil(nWidth * window.devicePixelRatio))
-    canvas.height = oddify(Math.ceil(nHeight * window.devicePixelRatio))
+    const canvas = this.canvas
+    console.log('resize', canvas.width)
     if (canvas.width > this.shadowCanvas.width) this.shadowCanvas.width = canvas.width
     if (canvas.height > this.shadowCanvas.height) this.shadowCanvas.height = canvas.height
-    this.refX -= (canvas.width - this.width) / 2
-    this.refY -= (canvas.height - this.height) / 2
+    this.refX = Math.round(this.refX - (canvas.width - this.width) / 2)
+    this.refY = Math.round(this.refY - (canvas.height - this.height) / 2)
     this.width = canvas.width
     this.height = canvas.height
     this.pan(-1, -1)
@@ -102,8 +95,8 @@ export class PZcanvas {
     const { width, height, shadowWidth, shadowHeight, scale, refX, refY } = this
     dx = this.trim(dx, this.panX - refX, scale * shadowWidth - (refX + width) + this.panX)
     dy = this.trim(dy, this.panY - refY, scale * shadowHeight - (refY + height) + this.panY)
-    if (Math.abs(dx) < 1) dx = 0
-    if (Math.abs(dy) < 1) dy = 0
+    if (Math.abs(dx) < 0.5) dx = 0
+    if (Math.abs(dy) < 0.5) dy = 0
     if (!dx && !dy) return
     this.clearZoomTimeout()
     const overX = this.trim(dx, -refX, shadowWidth - width - refX)
@@ -232,8 +225,8 @@ export class PZcanvas {
     ctx.clearRect(0, 0, width, height)
     ctx.drawImage(
       shadowCanvas,
-      zoom === 1 ? refX : rx,
-      zoom === 1 ? refY : ry,
+      Math.round(zoom === 1 ? refX : rx),
+      Math.round(zoom === 1 ? refY : ry),
       width / zoom,
       height / zoom,
       0,
