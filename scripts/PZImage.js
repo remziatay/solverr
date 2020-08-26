@@ -141,19 +141,18 @@ export class PZImage {
       nativeEvent: {
         offsetX: touch.clientX - rect.left,
         offsetY: touch.clientY - rect.top
-      },
-      movementX: touch.clientX - lastTouch.clientX,
-      movementY: touch.clientY - lastTouch.clientY
-    })
+      }
+    }, touch.clientX - lastTouch.clientX, touch.clientY - lastTouch.clientY)
   }
 
   newOnMouseDown (evt) {
     if (evt.buttons !== 1) return false
+    this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
     this.dragStart = true
     this.dragging = false
   }
 
-  newOnMouseMove (evt) {
+  newOnMouseMove (evt, movementX, movementY) {
     const { image, width, height, x, y, r } = this
     if (!this.dragStart) {
       const dx = evt.nativeEvent.offsetX * window.devicePixelRatio - x
@@ -170,19 +169,22 @@ export class PZImage {
       }
       return
     }
+    movementX = movementX || evt.nativeEvent.offsetX - this.lastXY.x
+    movementY = movementY || evt.nativeEvent.offsetY - this.lastXY.y
     this.dragging = true
     if (this.mode === 'move') {
-      this.x += evt.movementX * window.devicePixelRatio
-      this.y += evt.movementY * window.devicePixelRatio
+      this.x += movementX * window.devicePixelRatio
+      this.y += movementY * window.devicePixelRatio
     } else if (this.mode === 'nwse-resize') {
-      if (Math.abs(evt.movementX) > Math.abs(evt.movementY)) {
-        this.scale *= 1 + (evt.movementX * window.devicePixelRatio) / width
-      } else this.scale *= 1 + (evt.movementY * window.devicePixelRatio) / height
+      if (Math.abs(movementX) > Math.abs(movementY)) {
+        this.scale *= 1 + (movementX * window.devicePixelRatio) / width
+      } else this.scale *= 1 + (movementY * window.devicePixelRatio) / height
       this.width = image.width * this.scale
       this.height = image.height * this.scale
     }
 
     this.drawFaded()
+    this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
   }
 
   newOnMouseUp (evt) {

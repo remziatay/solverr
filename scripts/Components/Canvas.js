@@ -76,6 +76,7 @@ export default class Canvas extends React.Component {
   }
 
   onMouseDown = evt => {
+    this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
     evt.preventDefault()
     if (evt.buttons === 1) {
       this.dragStart = true
@@ -95,19 +96,19 @@ export default class Canvas extends React.Component {
   onMouseMove = evt => {
     if (!this.dragStart) return
     this.dragging = true
-    let x, y
+    const x = evt.nativeEvent.offsetX
+    const y = evt.nativeEvent.offsetY
     switch (this.mode) {
       case 'edit':
-        x = evt.nativeEvent.offsetX
-        y = evt.nativeEvent.offsetY
-        this.drawingPath.add(x - evt.movementX, y - evt.movementY, x, y)
+        this.drawingPath.add(this.lastXY.x, this.lastXY.y, x, y)
         break
       case 'pan':
-        this.pz.pan(-evt.movementX, -evt.movementY)
+        this.pz.pan(this.lastXY.x - x, this.lastXY.y - y)
         break
       default:
         break
     }
+    this.lastXY = { x, y }
   }
 
   onMouseUp = evt => {
