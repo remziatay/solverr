@@ -220,19 +220,59 @@ export class PZcanvas {
   refresh (tempControl = true) {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
     const { rx, ry, zoom } = this.halfZoom
-    ctx.clearRect(0, 0, width, height)
-    // ctx.imageSmoothingQuality = 'high'
-    ctx.drawImage(
-      shadowCanvas,
-      Math.round(zoom === 1 ? refX : rx),
-      Math.round(zoom === 1 ? refY : ry),
-      width / zoom,
-      height / zoom,
-      0,
-      0,
-      width,
-      height
-    )
-    if (this.tempPath && tempControl && zoom === 1) this.tempPath.draw(true)
+
+    if (zoom < 1 && this.oldZoom === zoom) {
+      const dx = -(rx - this.halfZoom.oldRx) * zoom
+      const dy = -(ry - this.halfZoom.oldRy) * zoom
+      ctx.save()
+      ctx.globalCompositeOperation = 'copy'
+      ctx.drawImage(this.canvas, dx, dy)
+      ctx.restore()
+      if (dx) {
+        ctx.drawImage(
+          shadowCanvas,
+          dx > 0 ? rx : (rx + (width + dx) / zoom),
+          ry,
+          Math.abs(dx) / zoom,
+          height / zoom,
+          dx > 0 ? 0 : (width + dx),
+          0,
+          Math.abs(dx),
+          height
+        )
+      }
+      if (dy) {
+        ctx.drawImage(
+          shadowCanvas,
+          rx + (dx > 0 ? dx / zoom : 0),
+          dy > 0 ? ry : (ry + (height + dy) / zoom),
+          (width - Math.abs(dx)) / zoom,
+          Math.abs(dy) / zoom,
+          dx > 0 ? dx : 0,
+          dy > 0 ? 0 : (height + dy),
+          width - Math.abs(dx),
+          Math.abs(dy)
+        )
+      }
+    } else {
+      ctx.clearRect(0, 0, width, height)
+      // ctx.imageSmoothingEnabled = true
+      // ctx.imageSmoothingQuality = 'high'
+      ctx.drawImage(
+        shadowCanvas,
+        Math.round(zoom === 1 ? refX : rx),
+        Math.round(zoom === 1 ? refY : ry),
+        width / zoom,
+        height / zoom,
+        0,
+        0,
+        width,
+        height
+      )
+      if (this.tempPath && tempControl && zoom === 1) this.tempPath.draw(true)
+    }
+    this.halfZoom.oldRx = rx
+    this.halfZoom.oldRy = ry
+    this.halfZoom.oldZoom = zoom
   }
 }
