@@ -40,6 +40,7 @@ export class TouchHandler {
       this.touchCache = []
       return
     }
+    this.twoFingerDragging = true
     const diffX1 = touch1.clientX - touchCache[index1].clientX
     const diffX2 = touch2.clientX - touchCache[index2].clientX
     const diffY1 = touch1.clientY - touchCache[index1].clientY
@@ -69,6 +70,7 @@ export class TouchHandler {
 
   onTouchStart (evt) {
     if (!evt.persist) evt.preventDefault() // If not React
+    if (evt.targetTouches.length > 2) return
     const { touchCache } = this
     if (evt.targetTouches.length === 2 && (this.functions.twoFingerDrag || this.functions.twoFingerZoom)) {
       touchCache.push(...evt.targetTouches)
@@ -130,9 +132,19 @@ export class TouchHandler {
       this.touchTimer = null
     }
 
-    if (evt.targetTouches.length) {
-      this.lastTouch = evt.touches[0]
-      return
+    if (this.twoFingerDragging) {
+      const stillDragging = this.touchCache.every(touch => {
+        for (const t of evt.touches) if (t.identifier === touch.identifier) return true
+        return false
+      })
+      if (!stillDragging) {
+        this.functions.twoFingerDrag.forEach(({ end }) => end && end(evt))
+        this.functions.twoFingerZoom.forEach(({ end }) => end && end(evt))
+        this.lastTouch = evt.touches[0]
+        this.twoFingerDragging = false
+        this.touchCache = []
+        return
+      }
     }
     if (!this.dragStart) return
     this.dragStart = false
