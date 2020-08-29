@@ -4,6 +4,7 @@ import { PZPath } from '../PZPath'
 import { PZcanvas } from '../PZcanvas'
 import { CircleContextMenu } from '../CircleContextMenu'
 import { PZImage } from '../PZImage'
+import { PZLine } from '../PZLine'
 
 export default class Canvas extends React.Component {
   dragStart = false
@@ -17,41 +18,32 @@ export default class Canvas extends React.Component {
     super(props)
     this.touchHandler.addGestureListener('drag',
       (touch, lastTouch, evt) => {
-        const x = touch.clientX
-        const y = touch.clientY
-        switch (this.mode) {
-          case 'edit': {
-            if (!this.drawingPath) break
-            const rect = evt.target.getBoundingClientRect()
-            this.drawingPath.add(lastTouch.clientX - rect.left, lastTouch.clientY - rect.top, x - rect.left, y - rect.top)
-            break
-          }
-          case 'pan':
-            this.pz.pan(lastTouch.clientX - x, lastTouch.clientY - y)
-            break
-          default:
-            break
-        }
+        const rect = evt.target.getBoundingClientRect()
+        this.keepDragging(lastTouch.clientX - rect.left, lastTouch.clientY - rect.top,
+          touch.clientX - rect.left, touch.clientY - rect.top)
       },
-      () => {
-        if (this.mode === 'edit') this.drawingPath = new PZPath(this.pz, this.props.connection, this.state.strokeSize)
+      (touch, evt) => {
+        const rect = evt.target.getBoundingClientRect()
+        this.startDragging({ x: touch.clientX - rect.left, y: touch.clientY - rect.top, mobile: true })
       },
-      () => { if (this.mode === 'edit') this.drawingPath?.finish() }
+      () => this.endDragging(true)
     )
 
     this.touchHandler.addGestureListener('longTouchDrag',
       (_, __, evt) => this.menu.ontouchmove(evt),
-      (evt) => this.menu.show(evt.touches[0].clientX, evt.touches[0].clientY),
+      (evt) => {
+        this.drawingPath.cancel()
+        this.drawingPath = null
+        this.menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
+      },
       () => this.menu.choose()
     )
 
     this.touchHandler.addGestureListener('twoFingerZoom',
       (zoom, center) => this.pz.zoom(1 + zoom * 0.005, center.x, center.y),
       () => {
-        if (this.mode === 'edit') {
-          this.drawingPath.cancel()
-          this.drawingPath = null
-        }
+        this.drawingPath.cancel()
+        this.drawingPath = null
       }
     )
 
@@ -75,19 +67,65 @@ export default class Canvas extends React.Component {
     }
   }
 
+  startDragging ({ x, y, mobile = false } = {}) {
+    switch (this.mode) {
+      case 'pan':
+        if (!mobile) this.setState({ cursor: 'grabbing' })
+        break
+      case 'edit':
+        this.drawingPath = new PZPath(this.pz, this.props.connection, this.state.strokeSize)
+        break
+      case 'line':
+        this.drawingPath = new PZLine(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
+        break
+      default:
+        break
+    }
+  }
+
+  keepDragging (x1, y1, x2, y2) {
+    switch (this.mode) {
+      case 'pan':
+        this.pz.pan(x1 - x2, y1 - y2)
+        break
+      case 'edit':
+        this.drawingPath.add(x1, y1, x2, y2)
+        break
+      case 'line':
+        this.drawingPath.endPoint(x2, y2)
+        break
+      default:
+        break
+    }
+  }
+
+  endDragging (mobile = false) {
+    switch (this.mode) {
+      case 'pan':
+        if (!mobile) this.setState({ cursor: 'grab' })
+        break
+      case 'edit':
+      case 'line':
+        this.drawingPath?.finish()
+        break
+      default:
+        break
+    }
+  }
+
   onMouseDown = evt => {
     this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
     evt.preventDefault()
     if (evt.buttons === 1) {
       this.dragStart = true
       this.dragging = false
-      if (this.mode === 'edit') this.drawingPath = new PZPath(this.pz, this.props.connection, this.state.strokeSize)
-      else if (this.mode === 'pan') this.setState({ cursor: 'grabbing' })
+      this.startDragging(this.lastXY)
     } else if (evt.buttons === 3 && this.mode === 'edit') {
       // left and right click at the same time to cancel dragging
       this.dragStart = false
       this.dragging = false
       this.drawingPath.cancel()
+      this.drawingPath = null
     } else if (evt.buttons === 2) {
       this.menu.show(evt.clientX, evt.clientY)
     }
@@ -98,29 +136,17 @@ export default class Canvas extends React.Component {
     this.dragging = true
     const x = evt.nativeEvent.offsetX
     const y = evt.nativeEvent.offsetY
-    switch (this.mode) {
-      case 'edit':
-        this.drawingPath.add(this.lastXY.x, this.lastXY.y, x, y)
-        break
-      case 'pan':
-        this.pz.pan(this.lastXY.x - x, this.lastXY.y - y)
-        break
-      default:
-        break
-    }
+    this.keepDragging(this.lastXY.x, this.lastXY.y, x, y)
     this.lastXY = { x, y }
   }
 
   onMouseUp = evt => {
     if (!this.dragStart || evt.button !== 0) return
-    if (this.mode === 'pan') this.setState({ cursor: 'grab' })
     this.dragStart = false
     if (!this.dragging) {
       const zoom = evt.shiftKey ? 0.9 : 1.1
       this.pz.zoom(zoom, evt.nativeEvent.offsetX, evt.nativeEvent.offsetY)
-    } else if (this.mode === 'edit') {
-      this.drawingPath.finish()
-    }
+    } else this.endDragging()
     this.dragging = false
   }
 
@@ -192,8 +218,13 @@ export default class Canvas extends React.Component {
     })
 
     this.menu.addButton('Draw', () => {
+      if (this.mode === 'pan') this.changeStrokeSize(0)
       this.mode = 'edit'
-      this.changeStrokeSize(0)
+    })
+
+    this.menu.addButton('Line', () => {
+      if (this.mode === 'pan') this.changeStrokeSize(0)
+      this.mode = 'line'
     })
 
     this.props.connection.on('data', this.ondata)
@@ -207,9 +238,22 @@ export default class Canvas extends React.Component {
   }
 
   ondata = data => {
-    if (data.type === 'path') new PZPath(this.pz, this.props.connection).from(data).finish()
-    else if (data.type === 'image') new PZImage(this.pz, this.props.connection, true).from(data)
-    else if (data.type === 'clear') this.pz.clear()
+    switch (data.type) {
+      case 'image':
+        new PZImage(this.pz, this.props.connection, true).from(data)
+        break
+      case 'clear':
+        this.pz.clear()
+        break
+      case 'path':
+        new PZPath(this.pz, this.props.connection).from(data).finish()
+        break
+      case 'line':
+        new PZLine(this.pz, this.props.connection).from(data).finish()
+        break
+      default:
+        break
+    }
   }
 
   render () {
