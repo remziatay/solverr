@@ -138,7 +138,15 @@ export class PZcanvas {
       halfZoom.ry += y * (1 - 1 / scale) / halfZoom.zoom
       halfZoom.zoom *= scale
     }
-    this.refresh()
+
+    if (!this.throttled) {
+      this.throttled = true
+      setTimeout(() => {
+        this.throttled = false
+        this.refresh()
+      }, 1000 / 60)
+    }
+
     let pt = this.real2canvas(x, y)
     shadowCtx.scale(scale, scale)
     shadowCtx.save()
@@ -221,6 +229,10 @@ export class PZcanvas {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
     const { rx, ry, zoom } = this.halfZoom
 
+    if (zoom < 0.4) {
+      this.update()
+      return
+    }
     if (zoom < 1 && this.halfZoom.oldZoom === zoom) {
       const dx = -(rx - this.halfZoom.oldRx) * zoom
       const dy = -(ry - this.halfZoom.oldRy) * zoom
@@ -256,8 +268,8 @@ export class PZcanvas {
       }
     } else {
       ctx.clearRect(0, 0, width, height)
-      // ctx.imageSmoothingEnabled = true
-      // ctx.imageSmoothingQuality = 'high'
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
       ctx.drawImage(
         shadowCanvas,
         Math.round(zoom === 1 ? refX : rx),
