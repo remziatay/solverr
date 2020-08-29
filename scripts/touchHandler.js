@@ -93,7 +93,7 @@ export class TouchHandler {
     if (evt.touches.length === 1) {
       this.dragStart = true
       this.dragging = false
-      this.functions.drag.forEach(({ start }) => start && start(evt))
+      this.functions.drag.forEach(({ start }) => start && start(evt.touches[0], evt))
     }
   }
 

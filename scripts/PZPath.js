@@ -13,6 +13,7 @@ export class PZPath {
   from ({ path, width, color }) {
     this.width = width
     this.color = color
+    this.remote = true
     this.path.moveTo(path[0].x, path[0].y)
     for (let i = 1; i < path.length; i++) {
       this.path.lineTo(path[i].x, path[i].y)
@@ -76,7 +77,7 @@ export class PZPath {
     }
     ctx.save()
     ctx.strokeStyle = this.color
-    ctx.lineWidth = this.width * (temp ? this.pzCanvas.scale : 1)
+    ctx.lineWidth = this.width
     ctx.lineCap = ctx.lineJoin = 'round'
     ctx.stroke(this.path)
     ctx.restore()
