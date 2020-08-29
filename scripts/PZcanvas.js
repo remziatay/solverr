@@ -221,7 +221,7 @@ export class PZcanvas {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
     const { rx, ry, zoom } = this.halfZoom
 
-    if (zoom < 1 && this.oldZoom === zoom) {
+    if (zoom < 1 && this.halfZoom.oldZoom === zoom) {
       const dx = -(rx - this.halfZoom.oldRx) * zoom
       const dy = -(ry - this.halfZoom.oldRy) * zoom
       ctx.save()
