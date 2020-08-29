@@ -229,10 +229,11 @@ export class PZcanvas {
     const { width, height, ctx, shadowCanvas, refX, refY } = this
     const { rx, ry, zoom } = this.halfZoom
 
-    if (zoom < 0.4) {
+    /* if (zoom < 0.4) {
       this.update()
       return
-    }
+    } */
+
     if (zoom < 1 && this.halfZoom.oldZoom === zoom) {
       const dx = -(rx - this.halfZoom.oldRx) * zoom
       const dy = -(ry - this.halfZoom.oldRy) * zoom
@@ -240,31 +241,16 @@ export class PZcanvas {
       ctx.globalCompositeOperation = 'copy'
       ctx.drawImage(this.canvas, dx, dy)
       ctx.restore()
+      const w = Math.abs(dx)
       if (dx) {
-        ctx.drawImage(
-          shadowCanvas,
-          dx > 0 ? rx : (rx + (width + dx) / zoom),
-          ry,
-          Math.abs(dx) / zoom,
-          height / zoom,
-          dx > 0 ? 0 : (width + dx),
-          0,
-          Math.abs(dx),
-          height
-        )
+        const x = dx > 0 ? 0 : (width + dx)
+        ctx.drawImage(shadowCanvas, rx + x / zoom, ry, w / zoom, height / zoom, x, 0, w, height)
       }
       if (dy) {
-        ctx.drawImage(
-          shadowCanvas,
-          rx + (dx > 0 ? dx / zoom : 0),
-          dy > 0 ? ry : (ry + (height + dy) / zoom),
-          (width - Math.abs(dx)) / zoom,
-          Math.abs(dy) / zoom,
-          dx > 0 ? dx : 0,
-          dy > 0 ? 0 : (height + dy),
-          width - Math.abs(dx),
-          Math.abs(dy)
-        )
+        const x = dx > 0 ? dx : 0
+        const y = dy > 0 ? 0 : (height + dy)
+        const h = Math.abs(dy)
+        ctx.drawImage(shadowCanvas, rx + x / zoom, ry + y / zoom, (width - w) / zoom, h / zoom, x, y, width - w, h)
       }
     } else {
       ctx.clearRect(0, 0, width, height)
