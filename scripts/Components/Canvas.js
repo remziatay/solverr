@@ -33,7 +33,7 @@ export default class Canvas extends React.Component {
     this.touchHandler.addGestureListener('longTouchDrag',
       (_, __, evt) => this.menu.ontouchmove(evt),
       (evt) => {
-        this.drawingPath.cancel()
+        this.drawingPath?.cancel()
         this.drawingPath = null
         this.menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
       },
@@ -43,7 +43,7 @@ export default class Canvas extends React.Component {
     this.touchHandler.addGestureListener('twoFingerZoom',
       (zoom, center) => this.pz.zoom(1 + zoom * 0.005, center.x, center.y),
       () => {
-        this.drawingPath.cancel()
+        this.drawingPath?.cancel()
         this.drawingPath = null
       }
     )
@@ -96,10 +96,8 @@ export default class Canvas extends React.Component {
         this.drawingPath.add(x1, y1, x2, y2)
         break
       case 'line':
-        this.drawingPath.endPoint(x2, y2)
-        break
       case 'rect':
-        this.drawingPath.endPoint(x2, y2)
+        this.drawingPath.movePoint(x2, y2).update()
         break
       default:
         break
@@ -132,7 +130,7 @@ export default class Canvas extends React.Component {
       // left and right click at the same time to cancel dragging
       this.dragStart = false
       this.dragging = false
-      this.drawingPath.cancel()
+      this.drawingPath?.cancel()
       this.drawingPath = null
     } else if (evt.buttons === 2) {
       this.menu.show(evt.clientX, evt.clientY)
@@ -154,6 +152,7 @@ export default class Canvas extends React.Component {
     if (!this.dragging) {
       const zoom = evt.shiftKey ? 0.9 : 1.1
       this.pz.zoom(zoom, evt.nativeEvent.offsetX, evt.nativeEvent.offsetY)
+      if (this.mode === 'pan') this.setState({ cursor: 'grab' })
     } else this.endDragging()
     this.dragging = false
   }
