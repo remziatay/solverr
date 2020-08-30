@@ -1,19 +1,20 @@
 import React from 'react'
 import { TouchHandler } from '../touchHandler'
-import { PZPath } from '../Tools/PZPath'
 import { PZcanvas } from '../PZcanvas'
 import { CircleContextMenu } from '../CircleContextMenu'
 import { PZImage } from '../Tools/PZImage'
+import { PZBrush } from '../Tools/PZBrush'
 import { PZLine } from '../Tools/PZLine'
 import { PZRect } from '../Tools/PZRect'
 
 export default class Canvas extends React.Component {
   dragStart = false
   dragging = false
-  mode = 'edit'
+  mode = 'tool'
   menu = new CircleContextMenu(200)
   touchHandler = new TouchHandler(500, 3)
   canvasRef = React.createRef()
+  tools = ['Brush', 'Line', 'Rect']
 
   constructor (props) {
     super(props)
@@ -67,19 +68,22 @@ export default class Canvas extends React.Component {
     }
   }
 
+  getClass (type) {
+    switch (type.toLowerCase()) {
+      case 'brush': return PZBrush
+      case 'line': return PZLine
+      case 'rect': return PZRect
+      default: return null
+    }
+  }
+
   startDragging ({ x, y, mobile = false } = {}) {
     switch (this.mode) {
       case 'pan':
         if (!mobile) this.setState({ cursor: 'grabbing' })
         break
-      case 'edit':
-        this.drawingPath = new PZPath(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
-        break
-      case 'line':
-        this.drawingPath = new PZLine(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
-        break
-      case 'rect':
-        this.drawingPath = new PZRect(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
+      case 'tool':
+        this.drawingPath = new this.Tool(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
         break
       default:
         break
@@ -91,9 +95,7 @@ export default class Canvas extends React.Component {
       case 'pan':
         this.pz.pan(x1 - x2, y1 - y2)
         break
-      case 'edit':
-      case 'line':
-      case 'rect':
+      case 'tool':
         this.drawingPath.movePoint(x2, y2).update()
         break
       default:
@@ -106,9 +108,7 @@ export default class Canvas extends React.Component {
       case 'pan':
         if (!mobile) this.setState({ cursor: 'grab' })
         break
-      case 'edit':
-      case 'line':
-      case 'rect':
+      case 'tool':
         this.drawingPath?.finish()
         break
       default:
@@ -123,7 +123,7 @@ export default class Canvas extends React.Component {
       this.dragStart = true
       this.dragging = false
       this.startDragging(this.lastXY)
-    } else if (evt.buttons === 3 && this.mode === 'edit') {
+    } else if (evt.buttons === 3 && this.mode === 'tool') {
       // left and right click at the same time to cancel dragging
       this.dragStart = false
       this.dragging = false
@@ -159,7 +159,7 @@ export default class Canvas extends React.Component {
     if (this.dragStart) return
     const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
 
-    if (evt.ctrlKey && this.mode === 'edit') {
+    if (evt.ctrlKey && this.mode === 'tool') {
       this.changeStrokeSize(evt.deltaY < 0 ? 2 : -2)
       return
     }
@@ -202,8 +202,10 @@ export default class Canvas extends React.Component {
     const canvas = this.canvasRef.current
     this.resize()
     this.pz = new PZcanvas(canvas, 6400, 6400)
-    if (this.mode === 'edit') this.changeStrokeSize(0)
-    else if (this.mode === 'pan') this.setState({ cursor: 'grab' })
+    if (this.mode === 'tool') {
+      this.Tool = this.getClass(this.tools[0])
+      this.changeStrokeSize(0)
+    } else if (this.mode === 'pan') this.setState({ cursor: 'grab' })
     // React can't prevent these for some reason. That's why preventing in native listeners
     this.preventDef = evt => evt.preventDefault()
     canvas.addEventListener('wheel', this.preventDef)
@@ -221,20 +223,13 @@ export default class Canvas extends React.Component {
       this.setState({ cursor: 'grab' })
     })
 
-    this.menu.addButton('Draw', () => {
-      if (this.mode === 'pan') this.changeStrokeSize(0)
-      this.mode = 'edit'
-    })
-
-    this.menu.addButton('Line', () => {
-      if (this.mode === 'pan') this.changeStrokeSize(0)
-      this.mode = 'line'
-    })
-
-    this.menu.addButton('Rect', () => {
-      if (this.mode === 'pan') this.changeStrokeSize(0)
-      this.mode = 'rect'
-    })
+    for (const tool of this.tools) {
+      this.menu.addButton(tool, () => {
+        this.Tool = this.getClass(tool)
+        if (this.mode !== 'tool') this.changeStrokeSize(0)
+        this.mode = 'tool'
+      })
+    }
 
     this.props.connection.on('data', this.ondata)
   }
@@ -254,16 +249,9 @@ export default class Canvas extends React.Component {
       case 'clear':
         this.pz.clear()
         break
-      case 'path':
-        new PZPath(this.pz, this.props.connection).from(data).finish()
-        break
-      case 'line':
-        new PZLine(this.pz, this.props.connection).from(data).finish()
-        break
-      case 'rect':
-        new PZRect(this.pz, this.props.connection).from(data).finish()
-        break
       default:
+        if (!this.getClass(data.type)) break
+        new (this.getClass(data.type))(this.pz, this.props.connection).from(data).finish()
         break
     }
   }

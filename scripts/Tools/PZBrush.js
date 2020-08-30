@@ -1,8 +1,8 @@
 import { Tool } from './Tool'
 
-export class PZPath extends Tool {
+export class PZBrush extends Tool {
   path = new Path2D()
-  type = 'path'
+  type = 'brush'
 
   from ({ points, width, color }) {
     super.from({ points, width, color })
