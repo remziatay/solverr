@@ -3,7 +3,7 @@ import Peer from 'peerjs'
 import Header from './Components/Header'
 import TopController from './Components/TopController'
 import CanvasContainer from './Components/CanvasContainer'
-import { PZImage } from './PZImage'
+import { PZImage } from './Tools/PZImage'
 
 export default class App extends React.Component {
   link = `${window.location.origin}${window.location.pathname.replace('//', '/')}#${this.props.name2}${this.props.name1}`

@@ -1,10 +1,10 @@
 import React from 'react'
 import { TouchHandler } from '../touchHandler'
-import { PZPath } from '../PZPath'
+import { PZPath } from '../Tools/PZPath'
 import { PZcanvas } from '../PZcanvas'
 import { CircleContextMenu } from '../CircleContextMenu'
-import { PZImage } from '../PZImage'
-import { PZLine } from '../PZLine'
+import { PZImage } from '../Tools/PZImage'
+import { PZLine } from '../Tools/PZLine'
 
 export default class Canvas extends React.Component {
   dragStart = false

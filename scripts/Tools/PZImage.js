@@ -1,4 +1,4 @@
-import { TouchHandler } from './touchHandler.js'
+import { TouchHandler } from '../touchHandler.js'
 
 export class PZImage {
   constructor (pzCanvas, conn, remote = false) {
