@@ -5,6 +5,7 @@ import { PZcanvas } from '../PZcanvas'
 import { CircleContextMenu } from '../CircleContextMenu'
 import { PZImage } from '../Tools/PZImage'
 import { PZLine } from '../Tools/PZLine'
+import { PZRect } from '../Tools/PZRect'
 
 export default class Canvas extends React.Component {
   dragStart = false
@@ -78,6 +79,9 @@ export default class Canvas extends React.Component {
       case 'line':
         this.drawingPath = new PZLine(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
         break
+      case 'rect':
+        this.drawingPath = new PZRect(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
+        break
       default:
         break
     }
@@ -94,6 +98,9 @@ export default class Canvas extends React.Component {
       case 'line':
         this.drawingPath.endPoint(x2, y2)
         break
+      case 'rect':
+        this.drawingPath.endPoint(x2, y2)
+        break
       default:
         break
     }
@@ -106,6 +113,7 @@ export default class Canvas extends React.Component {
         break
       case 'edit':
       case 'line':
+      case 'rect':
         this.drawingPath?.finish()
         break
       default:
@@ -227,6 +235,11 @@ export default class Canvas extends React.Component {
       this.mode = 'line'
     })
 
+    this.menu.addButton('Rect', () => {
+      if (this.mode === 'pan') this.changeStrokeSize(0)
+      this.mode = 'rect'
+    })
+
     this.props.connection.on('data', this.ondata)
   }
 
@@ -250,6 +263,9 @@ export default class Canvas extends React.Component {
         break
       case 'line':
         new PZLine(this.pz, this.props.connection).from(data).finish()
+        break
+      case 'rect':
+        new PZRect(this.pz, this.props.connection).from(data).finish()
         break
       default:
         break
