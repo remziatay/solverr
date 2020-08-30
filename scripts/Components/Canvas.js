@@ -64,7 +64,6 @@ export default class Canvas extends React.Component {
       },
       strokeSize: 10,
       cursor: 'auto'
-
     }
   }
 
@@ -74,7 +73,7 @@ export default class Canvas extends React.Component {
         if (!mobile) this.setState({ cursor: 'grabbing' })
         break
       case 'edit':
-        this.drawingPath = new PZPath(this.pz, this.props.connection, this.state.strokeSize)
+        this.drawingPath = new PZPath(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
         break
       case 'line':
         this.drawingPath = new PZLine(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
@@ -93,8 +92,6 @@ export default class Canvas extends React.Component {
         this.pz.pan(x1 - x2, y1 - y2)
         break
       case 'edit':
-        this.drawingPath.add(x1, y1, x2, y2)
-        break
       case 'line':
       case 'rect':
         this.drawingPath.movePoint(x2, y2).update()

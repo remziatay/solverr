@@ -23,8 +23,8 @@ export class Tool {
       y *= window.devicePixelRatio
     }
     this.remote = false
-    this.tempPoints[0] = { x, y }
-    this.points[0] = this.pzCanvas.canvasToAddPoint(x, y)
+    this.tempPoints = [{ x, y }]
+    this.points = [this.pzCanvas.canvasToAddPoint(x, y)]
     return this
   }
 
