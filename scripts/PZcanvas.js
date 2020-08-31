@@ -254,11 +254,8 @@ export class PZcanvas {
       }
     } else {
       ctx.clearRect(0, 0, width, height)
-      if (zoom > 1) {
-        ctx.save()
-        ctx.imageSmoothingEnabled = true
-        ctx.imageSmoothingQuality = 'high'
-      }
+      ctx.save()
+      ctx.imageSmoothingEnabled = zoom > 1
       ctx.drawImage(
         shadowCanvas,
         Math.round(zoom === 1 ? refX : rx),
@@ -270,7 +267,7 @@ export class PZcanvas {
         width,
         height
       )
-      if (zoom > 1) ctx.restore()
+      ctx.restore()
       if (this.tempPath && tempControl && zoom === 1) this.tempPath.draw(true)
     }
     this.halfZoom.oldRx = rx
