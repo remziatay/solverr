@@ -120,6 +120,7 @@ export default class Canvas extends React.Component {
     this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
     evt.preventDefault()
     if (evt.buttons === 1) {
+      evt.target.setPointerCapture(evt.pointerId)
       this.dragStart = true
       this.dragging = false
       this.startDragging(this.lastXY)
@@ -144,6 +145,7 @@ export default class Canvas extends React.Component {
   }
 
   onMouseUp = evt => {
+    evt.target.releasePointerCapture(evt.pointerId)
     if (!this.dragStart || evt.button !== 0) return
     this.dragStart = false
     if (!this.dragging) {

@@ -7,7 +7,7 @@ export class PZImage {
     if (!remote) pzCanvas.tempPath = this
     this.conn = conn
     this.setCursor = () => true
-    this.end = (evt) => this.finish(evt)
+    this.end = (evt) => { if (this.mode === 'auto') this.finish(evt) }
     this.touchHandler = new TouchHandler()
     this.touchHandler.addGestureListener('drag',
       (touch, lastTouch, evt) => this.touchMove(touch, lastTouch, evt),
@@ -147,6 +147,7 @@ export class PZImage {
 
   newOnMouseDown (evt) {
     if (evt.buttons !== 1) return false
+    evt.target.setPointerCapture(evt.pointerId)
     this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
     this.dragStart = true
     this.dragging = false
@@ -188,6 +189,7 @@ export class PZImage {
   }
 
   newOnMouseUp (evt) {
+    evt.target.releasePointerCapture(evt.pointerId)
     if (!this.dragStart) return
     this.dragStart = false
     if (this.mode === 'auto') this.finish()
