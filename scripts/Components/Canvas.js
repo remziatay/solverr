@@ -7,6 +7,7 @@ import { PZBrush } from '../Tools/PZBrush'
 import { PZLine } from '../Tools/PZLine'
 import { PZRect } from '../Tools/PZRect'
 import { PZEllipse } from '../Tools/PZEllipse'
+import { PZCircle } from '../Tools/PZCircle'
 
 export default class Canvas extends React.Component {
   dragStart = false
@@ -15,7 +16,7 @@ export default class Canvas extends React.Component {
   menu = new CircleContextMenu(200)
   touchHandler = new TouchHandler(500, 3)
   canvasRef = React.createRef()
-  tools = ['Brush', 'Line', 'Rect', 'Ellipse']
+  tools = ['Brush', 'Line', 'Rect', 'Ellipse', 'Circle']
 
   getClass (type) {
     switch (type.toLowerCase()) {
@@ -23,6 +24,7 @@ export default class Canvas extends React.Component {
       case 'line': return PZLine
       case 'rect': return PZRect
       case 'ellipse': return PZEllipse
+      case 'circle': return PZCircle
       default: return null
     }
   }
