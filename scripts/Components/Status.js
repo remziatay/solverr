@@ -34,16 +34,16 @@ export default class Status extends React.Component {
 
   render () {
     return (
-      <div className="row">
-        <div className="col-sm-12 text-center text-truncate">
-          <span className="font-weight-bolder">Status:</span>
-          <span className="text-wrap">
+      <>
+        <div className="status" >
+          <span style={{ fontWeight: 'bolder' }}>Status:&nbsp;</span>
+          <span>
             {this.props.statusText}
             {this.props.share && <a href={this.props.link}>{this.props.link}</a>}
           </span>
-          {this.props.share && <button id="copy-link" onClick={this.copyOrShare} className="btn btn-outline-dark btn-sm">{navigator.share ? 'Share' : 'Copy'}</button>}
         </div>
-      </div>
+        {this.props.share && <button id="copy-link" onClick={this.copyOrShare} className="">{navigator.share ? 'Share' : 'Copy'}</button>}
+      </>
     )
   }
 }

@@ -282,7 +282,7 @@ export default class Canvas extends React.Component {
         width={this.state.width}
         height={this.state.height}
         style={style}
-        className="shadow border border-dark"/>
+        className=""/>
     )
   }
 }
