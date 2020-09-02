@@ -8,27 +8,31 @@ export default class Header extends React.Component {
       { text: 'About', link: '/' },
       { text: 'Contact', link: '/' }
     ],
-    active: this.props.active || 0
+    active: this.props.active || 0,
+    open: false
+  }
+
+  buttonClick = evt => {
+    this.setState(state => ({ open: !state.open }))
   }
 
   render () {
     return (
-      <nav className="navbar navbar-expand-sm navbar-dark bg-dark static-top mb-2">
-        <div className="container">
-          <a className="navbar-brand" href="/">Solverr</a>
-          <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
-            aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
-            <span className="navbar-toggler-icon"></span>
+      <header id="navbar" className={this.state.open && 'open'}>
+        <nav className="navbar-container">
+          <a href="/" className="home-link">Solverr</a>
+          <button onClick={this.buttonClick} type="button" className="navbar-toggle">
+            <span className="icon-bar"></span>
+            <span className="icon-bar"></span>
+            <span className="icon-bar"></span>
           </button>
-          <div className="collapse navbar-collapse" id="navbarResponsive">
-            <ul className="navbar-nav ml-auto">
-              {this.state.navs.map(({ text, link }, index) => (
-                <NavLink key={text} text={text} link={link} active={this.state.active === index} />
-              ))}
-            </ul>
-          </div>
-        </div>
-      </nav>
+          <ul className="navbar-menu">
+            {this.state.navs.map(({ text, link }, index) => (
+              <NavLink key={text} text={text} link={link} active={this.state.active === index} />
+            ))}
+          </ul>
+        </nav>
+      </header>
     )
   }
 }
