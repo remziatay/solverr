@@ -124,7 +124,6 @@ export default class Canvas extends React.Component {
     this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
     evt.preventDefault()
     if (evt.buttons === 1) {
-      evt.target.setPointerCapture(evt.pointerId)
       this.dragStart = true
       this.dragging = false
       this.startDragging(this.lastXY)
@@ -149,7 +148,6 @@ export default class Canvas extends React.Component {
   }
 
   onMouseUp = evt => {
-    evt.target.releasePointerCapture(evt.pointerId)
     if (!this.dragStart || evt.button !== 0) return
     this.dragStart = false
     if (!this.dragging) {
@@ -216,9 +214,13 @@ export default class Canvas extends React.Component {
     } else if (this.mode === 'pan') this.setState({ cursor: 'grab' })
     // React can't prevent these for some reason. That's why preventing in native listeners
     this.preventDef = evt => evt.preventDefault()
+    this.capturePointer = evt => { if (evt.buttons === 1) evt.target.setPointerCapture(evt.pointerId) }
+    this.releasePointer = evt => evt.target.releasePointerCapture(evt.pointerId)
     canvas.addEventListener('wheel', this.preventDef)
     canvas.addEventListener('contextmenu', this.preventDef)
     canvas.addEventListener('touchstart', this.preventDef)
+    canvas.addEventListener('pointerdown', this.capturePointer)
+    canvas.addEventListener('pointerup', this.releasePointer)
 
     window.addEventListener('resize', this.resize)
     matchMedia('(resolution: 0dppx)').addListener(this.resize)
@@ -247,6 +249,8 @@ export default class Canvas extends React.Component {
     canvas.removeEventListener('wheel', this.preventDef)
     canvas.removeEventListener('contextmenu', this.preventDef)
     canvas.removeEventListener('touchstart', this.preventDef)
+    canvas.removeEventListener('pointerdown', this.capturePointer)
+    canvas.removeEventListener('pointerup', this.releasePointer)
   }
 
   ondata = data => {
@@ -281,8 +285,7 @@ export default class Canvas extends React.Component {
         id='main-canvas'
         width={this.state.width}
         height={this.state.height}
-        style={style}
-        className=""/>
+        style={style}/>
     )
   }
 }

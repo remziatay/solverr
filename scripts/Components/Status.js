@@ -1,13 +1,8 @@
 import React from 'react'
-import $ from 'jquery'
 
 export default class Status extends React.Component {
-  componentDidMount () {
-    $('#status-text').tooltip({
-      title: 'Copied to clipboard',
-      placement: 'bottom',
-      trigger: 'manual'
-    })
+  state = {
+    tooltip: false
   }
 
   copyOrShare = () => {
@@ -19,8 +14,7 @@ export default class Status extends React.Component {
       input.setSelectionRange(0, 99999)
       document.execCommand('copy')
       input.remove()
-      $('#status-text').tooltip('show')
-      setTimeout(() => $('#status-text').tooltip('hide'), 2500)
+      this.setState({ tooltip: true }, () => setTimeout(() => this.setState({ tooltip: false }), 2000))
     }
     if (!navigator.share) copyToClipBoard()
     else {
@@ -35,14 +29,17 @@ export default class Status extends React.Component {
   render () {
     return (
       <>
-        <div className="status" >
-          <span style={{ fontWeight: 'bolder' }}>Status:&nbsp;</span>
-          <span>
-            {this.props.statusText}
-            {this.props.share && <a href={this.props.link}>{this.props.link}</a>}
-          </span>
+        <div className="tooltip">
+          <div className={'tooltiptext ' + (this.state.tooltip ? 'pop' : '')}>Copied Link</div>
+          <div className="status" >
+            <span>Status:&nbsp;</span>
+            <div>
+              {this.props.statusText}
+              {this.props.share && <a href={this.props.link}>{this.props.link}</a>}
+            </div>
+          </div>
         </div>
-        {this.props.share && <button id="copy-link" onClick={this.copyOrShare} className="">{navigator.share ? 'Share' : 'Copy'}</button>}
+        {this.props.share && <button id="share-button" onClick={this.copyOrShare}>{navigator.share ? 'Share' : 'Copy'}</button>}
       </>
     )
   }

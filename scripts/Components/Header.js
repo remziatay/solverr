@@ -1,3 +1,4 @@
+import '../../styles/Components/header.css'
 import React, { createRef } from 'react'
 import NavLink from './NavLink'
 
@@ -22,7 +23,7 @@ export default class Header extends React.Component {
     document.body.removeEventListener('mousedown', this.close)
   }
 
-  buttonClick = evt => {
+  buttonClick = () => {
     if (!this.state.open) {
       document.body.addEventListener('touchstart', this.close)
       document.body.addEventListener('mousedown', this.close)

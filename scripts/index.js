@@ -1,5 +1,3 @@
-import 'popper.js'
-import 'bootstrap'
 import App from './App'
 import React from 'react'
 import ReactDom from 'react-dom'

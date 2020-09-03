@@ -113,14 +113,14 @@ export class PZImage {
   }
 
   newScroll (evt) {
-    evt.preventDefault()
+    evt = evt.nativeEvent
     if (this.dragStart) return
     const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
     this.scale *= 1 - delta / 10
     this.width = this.image.width * this.scale
     this.height = this.image.height * this.scale
-    this.x -= (evt.nativeEvent.offsetX * window.devicePixelRatio - this.x) * -delta / 10
-    this.y -= (evt.nativeEvent.offsetY * window.devicePixelRatio - this.y) * -delta / 10
+    this.x -= (evt.offsetX * window.devicePixelRatio - this.x) * -delta / 10
+    this.y -= (evt.offsetY * window.devicePixelRatio - this.y) * -delta / 10
     this.drawFaded()
   }
 
@@ -147,7 +147,6 @@ export class PZImage {
 
   newOnMouseDown (evt) {
     if (evt.buttons !== 1) return false
-    evt.target.setPointerCapture(evt.pointerId)
     this.lastXY = { x: evt.nativeEvent.offsetX, y: evt.nativeEvent.offsetY }
     this.dragStart = true
     this.dragging = false
@@ -189,7 +188,6 @@ export class PZImage {
   }
 
   newOnMouseUp (evt) {
-    evt.target.releasePointerCapture(evt.pointerId)
     if (!this.dragStart) return
     this.dragStart = false
     if (this.mode === 'auto') this.finish()

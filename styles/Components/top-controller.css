@@ -1,0 +1,74 @@
+.top-controller {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 90%;
+  max-width: 1366px;
+  column-gap: 0.5em;
+}
+
+.status {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.status > span:first-of-type {
+  font-weight: bolder;
+}
+
+.top-controller button {
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  border: none;
+  border-radius: 0.25em;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .top-controller button:hover {
+    background-color: var(--primary-contrast);
+    color: var(--text-color);
+  }
+}
+
+#clear-button {
+  flex: 1 0 auto;
+  align-self: stretch;
+}
+
+#share-button {
+  padding: 0.5em;
+}
+
+.tooltip {
+  position: relative;
+  min-width: 0;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  position: absolute;
+  z-index: 99999;
+  bottom: 105%;
+  left: 50%;
+  background-color: var(--primary-contrast);
+  color: var(--text-color);
+  text-align: center;
+  border-radius: 0.5em;
+  padding: 0.3em 1em;
+}
+
+.tooltip .tooltiptext::before {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: calc(50% - 5px);
+  border: 5px solid;
+  border-color: var(--primary-contrast) transparent transparent transparent;
+}
+
+.tooltip .tooltiptext.pop {
+  visibility: visible;
+}

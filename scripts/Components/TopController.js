@@ -1,3 +1,4 @@
+import '../../styles/Components/top-controller.css'
 import React from 'react'
 import ImageInput from './ImageInput'
 import ClearButton from './ClearButton'

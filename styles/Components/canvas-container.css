@@ -1,0 +1,33 @@
+#canvas-container {
+  display: flex;
+  justify-content: center;
+  width: 90%;
+  max-width: 1600px;
+  gap: 0.5em;
+  height: calc(var(--vh, 1vh) * 95);
+}
+
+#main-canvas {
+  flex: 0 1 90%;
+  min-width: 100px;
+  box-shadow: inset 0 0 0 1px var(--primary-color);
+}
+
+#toolbox {
+  flex: 1 0 10%;
+  display: flex;
+  flex-direction: row;
+  background-color: var(--text-color);
+  border-radius: 0.1em;
+  border: 1px solid var(--primary-color);
+}
+
+@media (orientation: portrait) {
+  #canvas-container {
+    flex-direction: column;
+  }
+
+  #toolbox {
+    flex-direction: column;
+  }
+}
