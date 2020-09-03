@@ -39,7 +39,7 @@ export default class Header extends React.Component {
       <header id="navbar" className={this.state.open ? 'open' : ''}>
         <nav className="navbar-container">
           <a href="/" className="home-link">Solverr</a>
-          <button ref={this.toggleRef} onClick={this.buttonClick} type="button" className="navbar-toggle">
+          <button ref={this.toggleRef} onClick={this.buttonClick} aria-label="Navigation Menu" className="navbar-toggle">
             <span className="icon-bar"></span>
             <span className="icon-bar"></span>
             <span className="icon-bar"></span>
