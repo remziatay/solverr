@@ -1,0 +1,1 @@
+:root{--navbar-height:50px;--primary-color:#0a1f33;--primary-contrast-alpha:rgba(101,89,153,0.51);--primary-contrast:#655999;--secondary-color:#e6c670;--text-color:#fcf7ff}body{padding-bottom:.4em;min-height:calc(var(--vh, 1vh)*100)}#app{display:flex;align-items:center;flex-flow:column;row-gap:.5em}
