@@ -16,7 +16,7 @@
 #toolbox {
   flex: 1 0 10%;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   background-color: var(--text-color);
   border-radius: 0.1em;
   border: 1px solid var(--primary-color);
@@ -28,6 +28,6 @@
   }
 
   #toolbox {
-    flex-direction: column;
+    flex-direction: row;
   }
 }

@@ -1,33 +1,13 @@
 import React from 'react'
 import { TouchHandler } from '../touchHandler'
 import { PZcanvas } from '../PZcanvas'
-import { CircleContextMenu } from '../CircleContextMenu'
 import { PZImage } from '../Tools/PZImage'
-import { PZBrush } from '../Tools/PZBrush'
-import { PZLine } from '../Tools/PZLine'
-import { PZRect } from '../Tools/PZRect'
-import { PZEllipse } from '../Tools/PZEllipse'
-import { PZCircle } from '../Tools/PZCircle'
 
 export default class Canvas extends React.Component {
   dragStart = false
   dragging = false
-  mode = 'tool'
-  menu = new CircleContextMenu(200)
   touchHandler = new TouchHandler(500, 3)
   canvasRef = React.createRef()
-  tools = ['Brush', 'Line', 'Rect', 'Ellipse', 'Circle']
-
-  getClass (type) {
-    switch (type.toLowerCase()) {
-      case 'brush': return PZBrush
-      case 'line': return PZLine
-      case 'rect': return PZRect
-      case 'ellipse': return PZEllipse
-      case 'circle': return PZCircle
-      default: return null
-    }
-  }
 
   constructor (props) {
     super(props)
@@ -45,13 +25,13 @@ export default class Canvas extends React.Component {
     )
 
     this.touchHandler.addGestureListener('longTouchDrag',
-      (_, __, evt) => this.menu.ontouchmove(evt),
+      (_, __, evt) => this.props.menu.ontouchmove(evt),
       (evt) => {
         this.drawingPath?.cancel()
         this.drawingPath = null
-        this.menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
+        this.props.menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
       },
-      () => this.menu.choose()
+      () => this.props.menu.choose()
     )
 
     this.touchHandler.addGestureListener('twoFingerZoom',
@@ -75,19 +55,17 @@ export default class Canvas extends React.Component {
         onTouchMove: this.touchHandler.onTouchMove,
         onTouchEnd: this.touchHandler.onTouchEnd,
         onWheel: this.handleScroll
-      },
-      strokeSize: 10,
-      cursor: 'auto'
+      }
     }
   }
 
   startDragging ({ x, y, mobile = false } = {}) {
-    switch (this.mode) {
+    switch (this.props.mode) {
       case 'pan':
-        if (!mobile) this.setState({ cursor: 'grabbing' })
+        if (!mobile) this.props.setCursor('grabbing')
         break
       case 'tool':
-        this.drawingPath = new this.Tool(this.pz, this.props.connection, this.state.strokeSize).startPoint(x, y)
+        this.drawingPath = new this.props.Tool(this.pz, this.props.connection, this.props.strokeSize).startPoint(x, y)
         break
       default:
         break
@@ -95,7 +73,7 @@ export default class Canvas extends React.Component {
   }
 
   keepDragging (x1, y1, x2, y2) {
-    switch (this.mode) {
+    switch (this.props.mode) {
       case 'pan':
         this.pz.pan(x1 - x2, y1 - y2)
         break
@@ -108,9 +86,9 @@ export default class Canvas extends React.Component {
   }
 
   endDragging (mobile = false) {
-    switch (this.mode) {
+    switch (this.props.mode) {
       case 'pan':
-        if (!mobile) this.setState({ cursor: 'grab' })
+        if (!mobile) this.props.setCursor('grab')
         break
       case 'tool':
         this.drawingPath?.finish()
@@ -127,14 +105,14 @@ export default class Canvas extends React.Component {
       this.dragStart = true
       this.dragging = false
       this.startDragging(this.lastXY)
-    } else if (evt.buttons === 3 && this.mode === 'tool') {
+    } else if (evt.buttons === 3 && this.props.mode === 'tool') {
       // left and right click at the same time to cancel dragging
       this.dragStart = false
       this.dragging = false
       this.drawingPath?.cancel()
       this.drawingPath = null
     } else if (evt.buttons === 2) {
-      this.menu.show(evt.clientX, evt.clientY)
+      this.props.menu.show(evt.clientX, evt.clientY)
     }
   }
 
@@ -153,7 +131,7 @@ export default class Canvas extends React.Component {
     if (!this.dragging) {
       const zoom = evt.shiftKey ? 0.9 : 1.1
       this.pz.zoom(zoom, evt.nativeEvent.offsetX, evt.nativeEvent.offsetY)
-      if (this.mode === 'pan') this.setState({ cursor: 'grab' })
+      if (this.props.mode === 'pan') this.props.setCursor('grab')
     } else this.endDragging()
     this.dragging = false
   }
@@ -163,25 +141,11 @@ export default class Canvas extends React.Component {
     if (this.dragStart) return
     const delta = evt.wheelDelta ? -evt.wheelDelta / 120 : evt.deltaY / 3
 
-    if (evt.ctrlKey && this.mode === 'tool') {
-      this.changeStrokeSize(evt.deltaY < 0 ? 2 : -2)
+    if (evt.ctrlKey && this.props.mode === 'tool') {
+      this.props.changeStrokeSize(evt.deltaY < 0 ? 2 : -2)
       return
     }
     this.pz.zoom(1 - delta / 10, evt.offsetX, evt.offsetY)
-  }
-
-  changeStrokeSize = change => {
-    this.setState(state => {
-      const strokeSize = Math.min(Math.max(state.strokeSize + change, 1), 128)
-      if (change && strokeSize === state.strokeSize) return
-      const changes = { strokeSize }
-      if (strokeSize < 5) changes.cursor = 'crosshair'
-      else {
-        const svg = `<svg width="${strokeSize}" height="${strokeSize}" xmlns="http://www.w3.org/2000/svg"><circle r="${strokeSize / 2 - 1}" cy="${strokeSize / 2}" cx="${strokeSize / 2}" stroke-width="1.5" stroke="black" fill="none"/></svg>`
-        changes.cursor = `url('data:image/svg+xml;utf8,${svg}') ${strokeSize / 2} ${strokeSize / 2}, auto`
-      }
-      return changes
-    })
   }
 
   componentDidUpdate () {
@@ -190,7 +154,7 @@ export default class Canvas extends React.Component {
   }
 
   resize = () => {
-    this.menu.resize()
+    this.props.menu.resize()
     const canvas = this.canvasRef.current
     const { width, height } = canvas.style
     canvas.style.width = canvas.style.height = ''
@@ -208,10 +172,7 @@ export default class Canvas extends React.Component {
     const canvas = this.canvasRef.current
     this.resize()
     this.pz = new PZcanvas(canvas, 4800, 3600)
-    if (this.mode === 'tool') {
-      this.Tool = this.getClass(this.tools[0])
-      this.changeStrokeSize(0)
-    } else if (this.mode === 'pan') this.setState({ cursor: 'grab' })
+
     // React can't prevent these for some reason. That's why preventing in native listeners
     this.preventDef = evt => evt.preventDefault()
     this.capturePointer = evt => { if (evt.buttons === 1) evt.target.setPointerCapture(evt.pointerId) }
@@ -226,20 +187,6 @@ export default class Canvas extends React.Component {
     matchMedia('(resolution: 0dppx)').addListener(this.resize)
 
     this.props.setPZ(this.pz)
-
-    this.menu.canvas.onmouseup = () => this.menu.choose()
-    this.menu.addButton('Pan', () => {
-      this.mode = 'pan'
-      this.setState({ cursor: 'grab' })
-    })
-
-    for (const tool of this.tools) {
-      this.menu.addButton(tool, () => {
-        this.Tool = this.getClass(tool)
-        if (this.mode !== 'tool') this.changeStrokeSize(0)
-        this.mode = 'tool'
-      })
-    }
 
     this.props.connection.on('data', this.ondata)
   }
@@ -261,21 +208,21 @@ export default class Canvas extends React.Component {
       case 'clear':
         this.pz.clear()
         break
-      default:
-        if (!this.getClass(data.type)) break
-        new (this.getClass(data.type))(this.pz, this.props.connection).from(data).finish()
-        break
+      default: {
+        const Tool = this.props.constructors[data.type]
+        if (Tool) new Tool(this.pz, this.props.connection).from(data).finish()
+      }
     }
   }
 
   render () {
     const style = {
-      cursor: this.state.cursor,
+      cursor: this.props.cursor,
       width: this.state.styleWidth,
       height: this.state.styleHeight
     }
 
-    if (this.props.image?.setCursor()) this.props.image.setCursor = cursor => cursor && this.setState({ cursor })
+    if (this.props.image?.setCursor()) this.props.image.setCursor = cursor => cursor && this.props.setCursor(cursor)
     const listeners = { ...this.state.listeners, ...this.props.image?.getNewListeners() }
 
     return (
