@@ -207,7 +207,7 @@ export default class Canvas extends React.Component {
   componentDidMount () {
     const canvas = this.canvasRef.current
     this.resize()
-    this.pz = new PZcanvas(canvas, 6400, 6400)
+    this.pz = new PZcanvas(canvas, 4800, 3600)
     if (this.mode === 'tool') {
       this.Tool = this.getClass(this.tools[0])
       this.changeStrokeSize(0)
