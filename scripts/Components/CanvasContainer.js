@@ -6,10 +6,10 @@ import ToolBox from './ToolBox'
 export default class CanvasContainer extends React.Component {
   render () {
     return (
-      <div id="canvas-container">
+      <main id="canvas-container">
         <Canvas connection={this.props.connection} setPZ={this.props.setPZ} image={this.props.image}/>
         <ToolBox/>
-      </div>
+      </main>
     )
   }
 }
