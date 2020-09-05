@@ -156,15 +156,17 @@ export default class Canvas extends React.Component {
   resize = () => {
     this.props.menu.resize()
     const canvas = this.canvasRef.current
-    const { width, height } = canvas.style
-    canvas.style.width = canvas.style.height = ''
-    const { offsetWidth, offsetHeight } = canvas
-    Object.assign(canvas.style, { width, height })
+    const { marginRight, marginBottom } = canvas.style
+    canvas.style.marginRight = canvas.style.marginBottom = ''
+    const rect = canvas.getBoundingClientRect()
+    Object.assign(canvas.style, { marginRight, marginBottom })
+    const width = Math.round(rect.width * window.devicePixelRatio)
+    const height = Math.round(rect.height * window.devicePixelRatio)
     this.setState({
-      styleWidth: Math.round(offsetWidth * window.devicePixelRatio) / window.devicePixelRatio + 'px',
-      styleHeight: Math.round(offsetHeight * window.devicePixelRatio) / window.devicePixelRatio + 'px',
-      width: Math.round(offsetWidth * window.devicePixelRatio),
-      height: Math.round(offsetHeight * window.devicePixelRatio)
+      marginX: rect.width - width / window.devicePixelRatio,
+      marginY: rect.height - height / window.devicePixelRatio,
+      width,
+      height
     }, () => this.pz.resize())
   }
 
@@ -223,8 +225,8 @@ export default class Canvas extends React.Component {
     }
     const style = {
       cursor: this.props.cursor,
-      width: this.state.styleWidth,
-      height: this.state.styleHeight
+      marginRight: this.state.marginX,
+      marginBottom: this.state.marginY
     }
 
     if (this.props.image?.setCursor()) this.props.image.setCursor = cursor => cursor && this.props.setCursor(cursor)
