@@ -16,6 +16,7 @@ export default class Header extends React.Component {
   toggleRef = createRef()
 
   close = evt => {
+    if (evt.target.classList.contains('navbar-link')) return
     const toggle = this.toggleRef.current
     if ([toggle, ...toggle.children].includes(evt.target)) return
     this.setState({ open: false })

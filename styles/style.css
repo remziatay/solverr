@@ -1,15 +1,14 @@
 :root {
   --navbar-height: 50px;
   --primary-color: #0a1f33;
-  --primary-contrast-alpha: #65599983;
-  --primary-contrast: #655999;
+  --primary-contrast: #393d67;
   --secondary-color: #e6c670;
   --text-color: #fcf7ff;
 }
 
 body {
   padding-bottom: 0.4em;
-  min-height: calc(var(--vh, 1vh) * 100);
+  min-height: 80vh;
 }
 
 #app {
