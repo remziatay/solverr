@@ -77,8 +77,8 @@ export class TouchHandler {
       clearTimeout(this.touchTimer)
       this.touchTimer = null
       // this.dragStart = this.dragging = false
-      this.functions.twoFingerDrag.forEach(({ start }) => start && start(evt))
-      this.functions.twoFingerZoom.forEach(({ start }) => start && start(evt))
+      this.functions.twoFingerDrag.forEach(({ start }) => start && start(evt.touches[0], evt))
+      this.functions.twoFingerZoom.forEach(({ start }) => start && start(evt.touches[0], evt))
       return
     }
     if (this.functions.longTouchDrag) {
@@ -86,7 +86,7 @@ export class TouchHandler {
       this.touchTimer = setTimeout(() => {
         this.longtouched = true
         this.touchTimer = null
-        this.functions.longTouchDrag.forEach(({ start }) => start && start(evt))
+        this.functions.longTouchDrag.forEach(({ start }) => start && start(evt.touches[0], evt))
       }, this.touchDuration)
     }
     this.lastTouch = evt.touches[0]

@@ -26,10 +26,10 @@ export default class Canvas extends React.Component {
 
     this.touchHandler.addGestureListener('longTouchDrag',
       (_, __, evt) => this.props.menu.ontouchmove(evt),
-      (evt) => {
+      (touch) => {
         this.drawingPath?.cancel()
         this.drawingPath = null
-        this.props.menu.show(evt.touches[0].clientX, evt.touches[0].clientY)
+        this.props.menu.show(touch.clientX, touch.clientY)
       },
       () => this.props.menu.choose()
     )
