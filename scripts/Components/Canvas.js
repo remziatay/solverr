@@ -188,6 +188,7 @@ export default class Canvas extends React.Component {
 
     this.props.setPZ(this.pz)
 
+    this.oldConnection = this.props.connection
     this.props.connection.on('data', this.ondata)
   }
 
@@ -216,6 +217,10 @@ export default class Canvas extends React.Component {
   }
 
   render () {
+    if (this.oldConnection !== this.props.connection) {
+      this.oldConnection = this.props.connection
+      this.props.connection.on('data', this.ondata)
+    }
     const style = {
       cursor: this.props.cursor,
       width: this.state.styleWidth,

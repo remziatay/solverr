@@ -10,7 +10,6 @@ if (window.location.hash) {
 } else {
   // name1 = Math.random().toString(36).substr(2, 8) + Math.random().toString(36).substr(2, 8);
   // name2 = Math.random().toString(36).substr(2, 8) + Math.random().toString(36).substr(2, 8);
-  // window.location.hash = name1 + name2;
   name1 = '6owmyzv313ihs1x9'
   name2 = 'r2368j2nlo14251b'
 }

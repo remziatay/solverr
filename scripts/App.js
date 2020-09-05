@@ -22,7 +22,10 @@ export default class App extends React.Component {
     })
 
     const connected = connection => {
-      if (connection) this.conn = connection
+      if (connection) {
+        this.conn = connection
+        this.setState({ conn: this.conn })
+      }
       this.setState({
         statusText: 'Connected',
         shareLink: false,
@@ -34,9 +37,10 @@ export default class App extends React.Component {
     peer.on('open', id => {
       console.log('My peer ID is: ' + id)
       if (window.location.hash) {
-        this.conn = peer.connect(this.props.name2)
-        this.conn.on('open', () => connected())
+        const conn = peer.connect(this.props.name2)
+        conn.on('open', () => connected(conn))
       } else {
+        window.location.hash = this.props.name1 + this.props.name2
         this.setState({
           statusText: 'Share link: ',
           shareLink: true
@@ -77,7 +81,7 @@ export default class App extends React.Component {
           share={this.state.shareLink}
           link={this.link}
           ready={this.state.ready}/>
-        {this.state.ready && <CanvasContainer connection={this.conn} setPZ={this.setPZ} image={this.state.imageAdding}/>}
+        {this.state.ready && <CanvasContainer connection={this.state.conn} setPZ={this.setPZ} image={this.state.imageAdding}/>}
       </>
     )
   }
