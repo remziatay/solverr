@@ -31,8 +31,6 @@ export default class CanvasContainer extends React.Component {
     tool => <ToolButton key={tool} name={tool} click={() => this.setTool(tool)}/>
   )
 
-  menu = new CircleContextMenu(200)
-
   changeStrokeSize = change => {
     this.setState(state => {
       const strokeSize = Math.min(Math.max(state.strokeSize + change, 1), 128)
@@ -60,6 +58,14 @@ export default class CanvasContainer extends React.Component {
 
   constructor (props) {
     super(props)
+    const rootStyle = getComputedStyle(document.body)
+    this.menu = new CircleContextMenu({
+      r: Math.min(250, window.innerHeight / 2, window.innerWidth / 2) * window.devicePixelRatio,
+      background: rootStyle.getPropertyValue('--tertiary-color') || '#e04e15',
+      color: rootStyle.getPropertyValue('--text-color') || '#fcf7ff',
+      chosenBackground: rootStyle.getPropertyValue('--primary-color') || '#0a1f33',
+      chosenColor: rootStyle.getPropertyValue('--secondary-color') || '#e6c670'
+    })
     this.menu.canvas.onmouseup = () => this.menu.choose()
     this.tools.forEach(tool => this.menu.addButton(tool, () => this.setTool(tool)))
   }

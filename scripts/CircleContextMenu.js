@@ -1,6 +1,13 @@
 export class CircleContextMenu {
-  constructor (r) {
-    this.r = r
+  constructor ({
+    r = 200,
+    background = 'red',
+    color = 'white',
+    chosenBackground = 'blue',
+    chosenColor = color,
+    font = '35px sans-serif'
+  } = {}) {
+    Object.assign(this, { r, background, color, chosenBackground, chosenColor, font })
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
     this.buttons = []
@@ -74,7 +81,6 @@ export class CircleContextMenu {
 
     let innerR = r / 2
     if (this.buttonCount === 1) innerR /= 1.5
-    const fontSize = 40
     const step = (2 * Math.PI) / (this.buttonCount + 1)
     const space = step / this.buttonCount
     const maxWidth = Math.sqrt(
@@ -122,18 +128,18 @@ export class CircleContextMenu {
       // Print button text
       ctx.save()
       rotate((Math.PI + step) / 2)
-      ctx.fillStyle = 'white'
+      ctx.fillStyle = i === this.chosen ? this.chosenColor : this.color
       ctx.fillText(this.buttons[i].text, r, (r - innerR) / 2, maxWidth)
       ctx.restore()
     }
 
     // Context defaults
     ctx.save()
-    ctx.fillStyle = 'red'
+    ctx.fillStyle = this.background
     ctx.lineWidth = 5
     ctx.textAlign = 'center'
     ctx.textBaseline = this.buttonCount > 2 ? 'middle' : 'top'
-    ctx.font = `${fontSize}px serif`
+    ctx.font = this.font
 
     rotate(-(Math.PI + step) / 2)
 
@@ -145,7 +151,7 @@ export class CircleContextMenu {
     // Draw the chosen one
     if (this.chosen !== undefined) {
       rotate(this.chosen * (step + space))
-      ctx.fillStyle = 'blue'
+      ctx.fillStyle = this.chosenBackground
       ctx.translate(-20, -20)
       ctx.scale(1.05, 1.05)
       drawButton(this.chosen)
@@ -169,5 +175,6 @@ export class CircleContextMenu {
   choose () {
     this.hide()
     if (this.chosen !== undefined) { this.buttons[this.chosen].func() }
+    this.chosen = undefined
   }
 }
