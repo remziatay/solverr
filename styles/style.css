@@ -1,8 +1,9 @@
 :root {
   --navbar-height: 50px;
   --primary-color: #0a1f33;
-  --primary-contrast: #393d67;
+  --primary-contrast: #1e374d;
   --secondary-color: #e6c670;
+  --tertiary-color: #e04e15;
   --text-color: #fcf7ff;
 }
 
