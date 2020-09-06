@@ -6,7 +6,7 @@ import { PZImage } from '../Tools/PZImage'
 export default class Canvas extends React.Component {
   dragStart = false
   dragging = false
-  touchHandler = new TouchHandler(500, 3)
+  touchHandler = new TouchHandler(500, 5)
   canvasRef = React.createRef()
 
   constructor (props) {

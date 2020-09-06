@@ -253,9 +253,9 @@ export class PZcanvas {
         ctx.drawImage(shadowCanvas, rx + x / zoom, ry + y / zoom, (width - w) / zoom, h / zoom, x, y, width - w, h)
       }
     } else {
-      ctx.clearRect(0, 0, width, height)
       ctx.save()
-      ctx.imageSmoothingEnabled = zoom > 1
+      ctx.globalCompositeOperation = 'copy'
+      ctx.imageSmoothingEnabled = zoom >= 1
       ctx.drawImage(
         shadowCanvas,
         Math.round(zoom === 1 ? refX : rx),

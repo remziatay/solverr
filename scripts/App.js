@@ -36,17 +36,15 @@ export default class App extends React.Component {
 
     peer.on('open', id => {
       console.log('My peer ID is: ' + id)
-      if (window.location.hash) {
-        const conn = peer.connect(this.props.name2)
-        conn.on('open', () => connected(conn))
-      } else {
-        window.location.hash = this.props.name1 + this.props.name2
-        this.setState({
-          statusText: 'Share link: ',
-          shareLink: true
-        })
-      }
-    })
+      if (!window.location.hash) window.location.hash = this.props.name1 + this.props.name2
+      const conn = peer.connect(this.props.name2)
+      conn.on('open', () => connected(conn))
+      this.setState({
+        statusText: 'Share link: ',
+        shareLink: true
+      })
+    }
+    )
 
     peer.on('connection', connection => connected(connection))
   }
