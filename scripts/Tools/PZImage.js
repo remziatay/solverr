@@ -11,7 +11,7 @@ export class PZImage {
     this.touchHandler = new TouchHandler()
     this.touchHandler.addGestureListener('drag',
       (touch, lastTouch, evt) => this.touchMove(touch, lastTouch, evt),
-      (evt) => this.touchStart(evt),
+      (_, evt) => this.touchStart(evt),
       () => { if (this.mode === 'auto') this.finish() }
     )
     this.touchHandler.addGestureListener('twoFingerZoom',
@@ -132,7 +132,7 @@ export class PZImage {
     if ((dx - width) ** 2 + (dy - height) ** 2 <= r ** 2) this.mode = 'nwse-resize'
     else if (dx < width && dx > 0 && dy < height && dy > 0) this.mode = 'move'
     else this.mode = 'auto'
-    this.newOnMouseDown({ buttons: 1 })
+    this.newOnMouseDown({ ...evt, buttons: 1 })
   }
 
   touchMove (touch, lastTouch, evt) {
@@ -169,8 +169,8 @@ export class PZImage {
       }
       return
     }
-    movementX = movementX || evt.nativeEvent.offsetX - this.lastXY.x
-    movementY = movementY || evt.nativeEvent.offsetY - this.lastXY.y
+    movementX = movementX ?? evt.nativeEvent.offsetX - this.lastXY.x
+    movementY = movementY ?? evt.nativeEvent.offsetY - this.lastXY.y
     this.dragging = true
     if (this.mode === 'move') {
       this.x += movementX * window.devicePixelRatio
