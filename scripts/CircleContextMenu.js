@@ -5,17 +5,18 @@ export class CircleContextMenu {
     color = 'white',
     chosenBackground = 'blue',
     chosenColor = color,
-    font = '35px sans-serif'
+    font = '35px sans-serif',
+    chooseOnRelease = true
   } = {}) {
     Object.assign(this, { r, background, color, chosenBackground, chosenColor, font })
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
     this.buttons = []
     this.buttonCount = 0
-    this.initCanvas()
+    this.initCanvas(chooseOnRelease)
   }
 
-  initCanvas () {
+  initCanvas (onRelease) {
     const canvas = this.canvas
     const style = canvas.style
     style.width = '100vw'
@@ -27,8 +28,11 @@ export class CircleContextMenu {
     document.body.appendChild(this.canvas)
     canvas.width = canvas.offsetWidth * window.devicePixelRatio
     canvas.height = canvas.offsetHeight * window.devicePixelRatio
-    canvas.onmousemove = (evt) => this.onmousemove(evt)
     canvas.oncontextmenu = (evt) => evt.preventDefault()
+    canvas.onmousemove = (evt) => this.onmousemove(evt)
+    canvas.ontouchmove = (evt) => this.ontouchmove(evt)
+    this.canvas.addEventListener(onRelease ? 'mouseup' : 'click', () => this.choose())
+    canvas.ontouchend = () => this.choose()
     this.hide()
   }
 
@@ -40,6 +44,7 @@ export class CircleContextMenu {
   }
 
   ontouchmove (evt) {
+    evt.preventDefault()
     this.onmousemove(evt.touches[0])
   }
 
@@ -160,6 +165,9 @@ export class CircleContextMenu {
   }
 
   show (x, y) {
+    const trim = (num, min, max) => Math.min(max, Math.max(min, num))
+    x = trim(x, this.r / window.devicePixelRatio, window.innerWidth - this.r / window.devicePixelRatio)
+    y = trim(y, this.r / window.devicePixelRatio, window.innerHeight - this.r / window.devicePixelRatio)
     this.x = x * window.devicePixelRatio - this.r
     this.y = y * window.devicePixelRatio - this.r
     this.ctx.setTransform(1, 0, 0, 1, this.x, this.y)
