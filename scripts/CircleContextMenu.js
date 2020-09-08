@@ -1,22 +1,25 @@
 export class CircleContextMenu {
   constructor ({
-    r = 200,
+    radius = 200,
     background = 'red',
     color = 'white',
     chosenBackground = 'blue',
     chosenColor = color,
     font = '35px sans-serif',
-    chooseOnRelease = true
+    element,
+    chooseOnRelease = true,
+    touchDuration = 500,
+    tolerance = 5
   } = {}) {
-    Object.assign(this, { r, background, color, chosenBackground, chosenColor, font })
+    Object.assign(this, { r: radius, background, color, chosenBackground, chosenColor, font })
     this.canvas = document.createElement('canvas')
     this.ctx = this.canvas.getContext('2d')
     this.buttons = []
     this.buttonCount = 0
-    this.initCanvas(chooseOnRelease)
+    this.initCanvas(element, chooseOnRelease, touchDuration, tolerance)
   }
 
-  initCanvas (onRelease) {
+  initCanvas (el, onRelease, duration, tolerance) {
     const canvas = this.canvas
     const style = canvas.style
     style.width = '100vw'
@@ -24,16 +27,60 @@ export class CircleContextMenu {
     style.left = style.top = 0
     style.position = 'fixed'
     style.zIndex = 9999
-
     document.body.appendChild(this.canvas)
     canvas.width = canvas.offsetWidth * window.devicePixelRatio
     canvas.height = canvas.offsetHeight * window.devicePixelRatio
-    canvas.oncontextmenu = (evt) => evt.preventDefault()
+
+    this.hide()
+    canvas.oncontextmenu = (evt) => { if (evt.button === 2) evt.preventDefault() }
+    canvas.style.userSelect = 'none'
     canvas.onmousemove = (evt) => this.onmousemove(evt)
     canvas.ontouchmove = (evt) => this.ontouchmove(evt)
-    this.canvas.addEventListener(onRelease ? 'mouseup' : 'click', () => this.choose())
     canvas.ontouchend = () => this.choose()
-    this.hide()
+    window.addEventListener('resize', () => this.resize())
+    if (onRelease) canvas.addEventListener('mouseup', () => this.choose())
+    else canvas.addEventListener('click', evt => { if (evt.button === 0) this.choose() })
+
+    if (!el) return
+    el.addEventListener('contextmenu', evt => { if (evt.button === 2) evt.preventDefault() })
+    if (onRelease) {
+      el.addEventListener('mousedown', evt => {
+        if (evt.buttons === 2) this.show(evt.clientX, evt.clientY)
+      })
+    } else {
+      el.addEventListener('contextmenu', evt => { if (evt.button === 2) this.show(evt.clientX, evt.clientY) })
+    }
+
+    if (duration) {
+      const forwardMove = evt => this.ontouchmove(evt)
+
+      const forwardEnd = () => {
+        this.choose()
+        el.removeEventListener('touchmove', forwardMove)
+        el.removeEventListener('touchend', forwardEnd)
+      }
+
+      el.addEventListener('touchstart', evt => {
+        this.lastTouch = evt.touches[0]
+        this.touchTimeout = clearTimeout(this.touchTimeout)
+        this.touchTimeout = setTimeout(() => {
+          this.show(evt.touches[0].clientX, evt.touches[0].clientY)
+          el.addEventListener('touchmove', forwardMove)
+          el.addEventListener('touchend', forwardEnd)
+        }, duration)
+      })
+
+      el.addEventListener('touchend', () => { this.touchTimeout = clearTimeout(this.touchTimeout) })
+
+      el.addEventListener('touchmove', evt => {
+        const touch = evt.touches[0]
+        if (this.touchTimeout &&
+          (this.lastTouch.clientX - touch.clientX) ** 2 + (this.lastTouch.clientY - touch.clientY) ** 2 > tolerance ** 2) {
+          this.touchTimeout = clearTimeout(this.touchTimeout)
+        }
+        this.lastTouch = touch
+      })
+    }
   }
 
   resize () {
@@ -58,6 +105,7 @@ export class CircleContextMenu {
     const deltaX = x - r
     const deltaY = r - y
     const distanceSqr = deltaX ** 2 + deltaY ** 2
+
     if (distanceSqr < 30 ** 2 || distanceSqr > (r + 30) ** 2) {
       this.chosen = undefined
       if (oldChosen !== this.chosen) this.redraw()
@@ -181,7 +229,7 @@ export class CircleContextMenu {
   }
 
   choose () {
-    this.hide()
+    setTimeout(() => { this.hide() }, 0)
     if (this.chosen !== undefined) { this.buttons[this.chosen].func() }
     this.chosen = undefined
   }

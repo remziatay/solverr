@@ -60,7 +60,7 @@ export default class CanvasContainer extends React.Component {
     super(props)
     const rootStyle = getComputedStyle(document.body)
     this.menu = new CircleContextMenu({
-      r: 2 / 5 * Math.min(960, window.innerHeight, window.innerWidth) * window.devicePixelRatio,
+      radius: 2 / 5 * Math.min(960, window.innerHeight, window.innerWidth) * window.devicePixelRatio,
       background: rootStyle.getPropertyValue('--tertiary-color') || '#e04e15',
       color: rootStyle.getPropertyValue('--text-color') || '#fcf7ff',
       chosenBackground: rootStyle.getPropertyValue('--primary-color') || '#0a1f33',

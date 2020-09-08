@@ -154,7 +154,6 @@ export default class Canvas extends React.Component {
   }
 
   resize = () => {
-    this.props.menu.resize()
     const canvas = this.canvasRef.current
     const { marginRight, marginBottom } = canvas.style
     canvas.style.marginRight = canvas.style.marginBottom = ''
