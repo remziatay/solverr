@@ -35,7 +35,7 @@ export default class Status extends React.Component {
             <span>Status:&nbsp;</span>
             <div>
               {this.props.statusText}
-              {this.props.share && <a href={this.props.link}>{this.props.link}</a>}
+              {this.props.share && <a target='_blank' rel="noreferrer" href={this.props.link}>{this.props.link}</a>}
             </div>
           </div>
         </div>
