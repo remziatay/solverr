@@ -39,7 +39,7 @@ export class PZImage {
     this.scale = scale
     this.image = new Image()
     this.image.onload = () => {
-      this.pzCanvas.paths.push(() => this.draw())
+      this.pzCanvas.addNewDrawing(() => this.draw())
       if (!this.pzCanvas.isReady()) return
       this.draw()
       this.pzCanvas.refresh()
@@ -211,7 +211,7 @@ export class PZImage {
     document.removeEventListener('click', this.end)
     this.finally()
     this.setCursor(this.oldCursor)
-    const p = this.pzCanvas.canvasToAddPoint(this.x, this.y)
+    const p = this.pzCanvas.convertPoint(this.x, this.y)
     this.x = p.x
     this.y = p.y
     this.scale /= this.pzCanvas.scale
@@ -229,7 +229,7 @@ export class PZImage {
       console.error(err)
     }
 
-    this.pzCanvas.paths.push(() => this.draw())
+    this.pzCanvas.addNewDrawing(() => this.draw())
     if (!this.pzCanvas.isReady()) return
     this.draw()
     this.pzCanvas.refresh()

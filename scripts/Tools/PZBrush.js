@@ -29,7 +29,7 @@ export class PZBrush extends Tool {
     this.pzCanvas.tempPath = this
     this.tempPoints.push({ x, y })
 
-    const p = this.pzCanvas.canvasToAddPoint(x, y)
+    const p = this.pzCanvas.convertPoint(x, y)
     this.path.lineTo(p.x, p.y)
     this.path.moveTo(p.x, p.y)
     this.points.push(p)

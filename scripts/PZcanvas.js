@@ -1,3 +1,5 @@
+const trim = (num, min, max) => Math.min(max, Math.max(min, num))
+
 export class PZcanvas {
   constructor (canvas, shadowWidth, shadowHeight) {
     canvas.width *= window.devicePixelRatio
@@ -14,14 +16,13 @@ export class PZcanvas {
     this.shadowCanvas.width = shadowWidth
     this.shadowCanvas.height = shadowHeight
     this.shadowCtx = this.shadowCanvas.getContext('2d')
-    this.trim = (num, min, max) => Math.min(max, Math.max(min, num))
 
     this.clear()
   }
 
   clear () {
     const { width, height, shadowWidth, shadowHeight, shadowCtx } = this
-    this.paths = []
+    this.drawings = []
     this.tempPath = null
     this.scale = 1
 
@@ -36,22 +37,26 @@ export class PZcanvas {
   }
 
   resize () {
-    const canvas = this.canvas
-    if (canvas.width > this.shadowCanvas.width) this.shadowCanvas.width = canvas.width
-    if (canvas.height > this.shadowCanvas.height) this.shadowCanvas.height = canvas.height
+    const { canvas, shadowCanvas } = this
+    if (canvas.width > shadowCanvas.width) shadowCanvas.width = canvas.width
+    if (canvas.height > shadowCanvas.height) shadowCanvas.height = canvas.height
     this.refX = Math.round(this.refX - (canvas.width - this.width) / 2)
     this.refY = Math.round(this.refY - (canvas.height - this.height) / 2)
     this.width = canvas.width
     this.height = canvas.height
-    if (this.pan(-1, -1) || this.pan(1, 1)) return
+    if (this.pan(-1, -1, false) || this.pan(1, 1, false)) return
     this.update()
+  }
+
+  addNewDrawing (func) {
+    this.drawings.push(func)
   }
 
   isReady () {
     return this.halfZoom.zoom === 1
   }
 
-  canvasToAddPoint (x, y) {
+  convertPoint (x, y) {
     const { refX, panX, refY, panY, scale } = this
     return { x: (x + refX - panX) / scale, y: (y + refY - panY) / scale }
   }
@@ -72,14 +77,14 @@ export class PZcanvas {
     this.halfZoom.zoom = 1
     requestAnimationFrame(() => {
       shadowCtx.save()
-      shadowCtx.setTransform(1, 0, 0, 1, 0, 0)
+      shadowCtx.resetTransform()
       shadowCtx.clearRect(0, 0, shadowWidth, shadowHeight)
       shadowCtx.translate(panX, panY)
       shadowCtx.scale(scale, scale)
       shadowCtx.lineWidth = 1 / scale
       this.dose()
       shadowCtx.strokeRect(0, 0, shadowWidth, shadowHeight)
-      this.paths.forEach(draw => draw())
+      this.drawings.forEach(draw => draw())
       shadowCtx.restore()
       this.refresh()
     })
@@ -91,14 +96,14 @@ export class PZcanvas {
       dy *= window.devicePixelRatio
     }
     const { width, height, shadowWidth, shadowHeight, scale, refX, refY } = this
-    dx = this.trim(dx, this.panX - refX, scale * shadowWidth - (refX + width) + this.panX)
-    dy = this.trim(dy, this.panY - refY, scale * shadowHeight - (refY + height) + this.panY)
+    dx = trim(dx, this.panX - refX, scale * shadowWidth - (refX + width) + this.panX)
+    dy = trim(dy, this.panY - refY, scale * shadowHeight - (refY + height) + this.panY)
     if (Math.abs(dx) < 0.5) dx = 0
     if (Math.abs(dy) < 0.5) dy = 0
     if (!dx && !dy) return
     this.clearZoomTimeout()
-    const overX = this.trim(dx, -refX, shadowWidth - width - refX)
-    const overY = this.trim(dy, -refY, shadowHeight - height - refY)
+    const overX = trim(dx, -refX, shadowWidth - width - refX)
+    const overY = trim(dy, -refY, shadowHeight - height - refY)
     this.refX += dx
     this.refY += dy
     if (Math.abs(dx - overX) >= 1 || Math.abs(dy - overY) >= 1) {
@@ -126,7 +131,7 @@ export class PZcanvas {
       y *= window.devicePixelRatio
     }
     const { shadowCtx, width, height, shadowWidth, shadowHeight, halfZoom } = this
-    scale = this.trim(scale, 1 / (this.scale * Math.min(shadowWidth / width, shadowHeight / height)), 20 / this.scale)
+    scale = trim(scale, 1 / (this.scale * Math.min(shadowWidth / width, shadowHeight / height)), 20 / this.scale)
     if (scale === 1) return
     this.clearZoomTimeout()
     if (halfZoom.zoom === 1) {
@@ -170,10 +175,10 @@ export class PZcanvas {
 
   setZoomTimeout () {
     this.zoomDebounceTimeout = setTimeout(() => {
-      // panning and reversing so the overflow will be fixed
       this.zoomDebounceTimeout = null
       this.halfZoom.zoom = 1
-      if (this.pan(1, 1) || this.pan(-1, -1)) return
+      // panning and reversing so the overflow will be fixed
+      if (this.pan(1, 1, false) || this.pan(-1, -1, false)) return
       this.update()
     }, 500)
   }
@@ -205,15 +210,6 @@ export class PZcanvas {
       this.panY -= diff
     }
   }
-
-  /*
-  transformedPoint (x, y) {
-    const inv = this.shadowCtx.getTransform().invertSelf()
-    x = inv.a * x + inv.c * y + inv.e
-    y = inv.b * x + inv.d * y + inv.f
-    return { x, y }
-  }
-  */
 
   real2canvas (x, y) {
     x += this.refX - this.panX
@@ -260,12 +256,8 @@ export class PZcanvas {
         shadowCanvas,
         Math.round(zoom === 1 ? refX : rx),
         Math.round(zoom === 1 ? refY : ry),
-        width / zoom,
-        height / zoom,
-        0,
-        0,
-        width,
-        height
+        width / zoom, height / zoom,
+        0, 0, width, height
       )
       ctx.restore()
       if (this.tempPath && tempControl && zoom === 1) this.tempPath.draw(true)

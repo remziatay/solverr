@@ -24,7 +24,7 @@ export class Tool {
     }
     this.remote = false
     this.tempPoints = [{ x, y }]
-    this.points = [this.pzCanvas.canvasToAddPoint(x, y)]
+    this.points = [this.pzCanvas.convertPoint(x, y)]
     return this
   }
 
@@ -34,7 +34,7 @@ export class Tool {
       y *= window.devicePixelRatio
     }
     this.tempPoints[1] = { x, y }
-    this.points[1] = this.pzCanvas.canvasToAddPoint(x, y)
+    this.points[1] = this.pzCanvas.convertPoint(x, y)
     this.pzCanvas.tempPath = this
 
     return this
@@ -69,7 +69,7 @@ export class Tool {
       console.error(err)
     }
 
-    this.pzCanvas.paths.push(() => this.draw())
+    this.pzCanvas.addNewDrawing(() => this.draw())
     this.pzCanvas.refresh()
   }
 
