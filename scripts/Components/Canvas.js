@@ -129,10 +129,10 @@ export default class Canvas extends React.Component {
     if (!this.dragStart || evt.button !== 0) return
     this.dragStart = false
     if (!this.dragging) {
-      const zoom = evt.shiftKey ? 0.9 : 1.1
-      this.pz.zoom(zoom, evt.nativeEvent.offsetX, evt.nativeEvent.offsetY)
       if (this.props.mode === 'pan') this.props.setCursor('grab')
-    } else this.endDragging()
+      this.keepDragging(this.lastXY.x, this.lastXY.y, evt.nativeEvent.offsetX, evt.nativeEvent.offsetY)
+    }
+    this.endDragging()
     this.dragging = false
   }
 

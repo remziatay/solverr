@@ -9,6 +9,7 @@ import { PZEllipse } from '../Tools/PZEllipse'
 import { PZCircle } from '../Tools/PZCircle'
 import ToolButton from './ToolButton'
 import { CircleContextMenu } from '../CircleContextMenu'
+import { PZEraser } from '../Tools/PZEraser'
 
 export default class CanvasContainer extends React.Component {
   state = {
@@ -18,13 +19,14 @@ export default class CanvasContainer extends React.Component {
     cursor: 'grab'
   }
 
-  tools = ['Pan', 'Brush', 'Line', 'Rect', 'Ellipse', 'Circle']
+  tools = ['Pan', 'Brush', 'Line', 'Rect', 'Ellipse', 'Circle', 'Eraser']
   classes = {
     brush: PZBrush,
     line: PZLine,
     rect: PZRect,
     ellipse: PZEllipse,
-    circle: PZCircle
+    circle: PZCircle,
+    eraser: PZEraser
   }
 
   toolButtons = this.tools.map(
