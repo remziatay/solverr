@@ -35,13 +35,6 @@
   padding: 0.2em 1em;
 }
 
-@media (hover: hover) and (pointer: fine) {
-  .tool-button:hover {
-    background-color: var(--primary-contrast);
-    color: var(--text-color);
-  }
-}
-
 @media (orientation: portrait) {
   #canvas-container {
     flex-direction: column;

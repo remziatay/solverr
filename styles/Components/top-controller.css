@@ -21,16 +21,9 @@
 
 .top-controller button {
   background-color: var(--primary-color);
-  color: var(--secondary-color);
+  color: var(--text-color);
   border: none;
   border-radius: 0.25em;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .top-controller button:hover {
-    background-color: var(--primary-contrast);
-    color: var(--text-color);
-  }
 }
 
 #clear-button {

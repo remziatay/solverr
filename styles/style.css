@@ -18,3 +18,8 @@ body {
   flex-flow: column;
   row-gap: 0.5em;
 }
+
+.generic-hover:hover,
+.generic-hover:focus {
+  filter: brightness(130%);
+}

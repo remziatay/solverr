@@ -157,6 +157,9 @@
 .navbar-item:not(.active):hover,
 .navbar-item:not(.active):focus {
   border-radius: 0.25em;
-  background-color: var(--primary-contrast);
-  color: var(--text-color);
+  background-color: var(--primary-color);
+}
+
+.navbar-item.active {
+  filter: grayscale();
 }

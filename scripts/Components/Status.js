@@ -39,7 +39,7 @@ export default class Status extends React.Component {
             </div>
           </div>
         </div>
-        {this.props.share && <button id="share-button" onClick={this.copyOrShare}>{navigator.share ? 'Share' : 'Copy'}</button>}
+        {this.props.share && <button className='generic-hover' id="share-button" onClick={this.copyOrShare}>{navigator.share ? 'Share' : 'Copy'}</button>}
       </>
     )
   }
