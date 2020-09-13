@@ -54,7 +54,7 @@ export default class CanvasContainer extends React.Component {
       this.setState({ mode: 'pan', cursor: 'grab' })
       return
     }
-    if (this.state.mode !== 'tool') this.changeStrokeSize(0)
+    this.changeStrokeSize(0)
     this.setState({ mode: 'tool', Tool: this.classes[tool.toLowerCase()] })
   }
 

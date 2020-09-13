@@ -54,6 +54,7 @@ export default class App extends React.Component {
   }
 
   setImage = evt => {
+    this.clear()
     const file = evt.target.files[0]
     if (!file.type.match(/image-*/)) return
     this.setState({
