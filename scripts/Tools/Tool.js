@@ -35,7 +35,7 @@ export class Tool {
     }
     this.tempPoints[1] = { x, y }
     this.points[1] = this.pzCanvas.convertPoint(x, y)
-    this.pzCanvas.tempPath = this
+    if (this.type !== 'eraser') this.pzCanvas.tempPath = this
 
     return this
   }
@@ -54,6 +54,7 @@ export class Tool {
       shadowCtx.setTransform(scale, 0, 0, scale, panX, panY)
       this.draw()
       shadowCtx.restore()
+      if (this.type === 'eraser') this.pzCanvas.drawImage?.()
     }
 
     try {

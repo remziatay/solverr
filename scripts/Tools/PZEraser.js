@@ -11,34 +11,30 @@ export class PZEraser extends PZBrush {
 
   update () {
     if (!this.pzCanvas.isReady()) return
-    const ctx = this.pzCanvas.ctx
+    const ctx = this.pzCanvas.shadowCtx
     ctx.save()
+    ctx.setTransform(this.pzCanvas.scale, 0, 0, this.pzCanvas.scale, this.pzCanvas.panX, this.pzCanvas.panY)
     ctx.globalCompositeOperation = 'destination-out'
-    ctx.lineWidth = this.width * this.pzCanvas.scale
+    ctx.lineWidth = this.width
     ctx.lineCap = ctx.lineJoin = 'round'
     ctx.beginPath()
-    const { x: x1, y: y1 } = this.tempPoints[this.tempPoints.length - 2]
-    const { x: x2, y: y2 } = this.tempPoints[this.tempPoints.length - 1]
+    const { x: x1, y: y1 } = this.points[this.points.length - 2]
+    const { x: x2, y: y2 } = this.points[this.points.length - 1]
     ctx.moveTo(x1, y1)
     ctx.lineTo(x2, y2)
     ctx.stroke()
+    this.pzCanvas.drawImage?.()
     ctx.restore()
+    this.pzCanvas.refresh(false)
   }
 
-  draw (temp = false) {
-    const ctx = temp ? this.pzCanvas.ctx : this.pzCanvas.shadowCtx
+  draw () {
+    const ctx = this.pzCanvas.shadowCtx
     ctx.save()
     ctx.globalCompositeOperation = 'destination-out'
-    ctx.lineWidth = this.width * (temp ? this.pzCanvas.scale : 1)
+    ctx.lineWidth = this.width
     ctx.lineCap = ctx.lineJoin = 'round'
-    if (temp) {
-      this.tempPoints.forEach((p) => {
-        ctx.beginPath()
-        ctx.moveTo(p.x1, p.y1)
-        ctx.lineTo(p.x2, p.y2)
-        ctx.stroke()
-      })
-    } else ctx.stroke(this.path)
+    ctx.stroke(this.path)
     ctx.restore()
   }
 }

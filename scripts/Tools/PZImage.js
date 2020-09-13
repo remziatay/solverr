@@ -39,7 +39,7 @@ export class PZImage {
     this.scale = scale
     this.image = new Image()
     this.image.onload = () => {
-      this.pzCanvas.addNewDrawing(() => this.draw())
+      this.pzCanvas.setImage(() => this.draw())
       if (!this.pzCanvas.isReady()) return
       this.draw()
       this.pzCanvas.refresh()
@@ -229,7 +229,7 @@ export class PZImage {
       console.error(err)
     }
 
-    this.pzCanvas.addNewDrawing(() => this.draw())
+    this.pzCanvas.setImage(() => this.draw())
     if (!this.pzCanvas.isReady()) return
     this.draw()
     this.pzCanvas.refresh()

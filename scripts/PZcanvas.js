@@ -32,6 +32,7 @@ export class PZcanvas {
     this.panY = 0
 
     this.halfZoom = { zoom: 1 }
+    this.drawImage = null
     shadowCtx.resetTransform()
     this.update()
   }
@@ -52,6 +53,20 @@ export class PZcanvas {
     this.drawings.push(func)
   }
 
+  setImage (drawFunc) {
+    this.drawImage = () => {
+      const { shadowCtx, panX, panY, scale } = this
+      shadowCtx.save()
+      shadowCtx.resetTransform()
+      shadowCtx.translate(panX, panY)
+      shadowCtx.scale(scale, scale)
+      shadowCtx.globalCompositeOperation = 'destination-over'
+      drawFunc()
+      shadowCtx.restore()
+      this.refresh(false)
+    }
+  }
+
   isReady () {
     return this.halfZoom.zoom === 1
   }
@@ -63,6 +78,7 @@ export class PZcanvas {
 
   dose () {
     const ctx = this.shadowCtx
+    ctx.globalCompositeOperation = 'destination-over'
     for (let i = 0; i <= this.shadowWidth + 50; i += 50) {
       for (let j = 0; j <= this.shadowHeight + 50; j += 50) {
         ctx.fillRect(i, j, 1, 1)
@@ -82,11 +98,12 @@ export class PZcanvas {
       shadowCtx.translate(panX, panY)
       shadowCtx.scale(scale, scale)
       shadowCtx.lineWidth = 1 / scale
-      this.dose()
       shadowCtx.strokeRect(0, 0, shadowWidth, shadowHeight)
       this.drawings.forEach(draw => draw())
+      this.drawImage?.()
+      // this.dose()
       shadowCtx.restore()
-      this.refresh()
+      this.refresh(false)
     })
   }
 
