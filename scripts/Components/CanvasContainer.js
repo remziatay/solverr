@@ -91,6 +91,7 @@ export default class CanvasContainer extends React.Component {
           Tool = {this.state.Tool}
           cursor = {this.state.cursor}
           strokeSize = {this.state.strokeSize}
+          color={this.state.color}
           setCursor = {this.setCursor}
           changeStrokeSize = {this.changeStrokeSize}
           menu = {this.menu}

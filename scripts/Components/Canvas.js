@@ -65,7 +65,7 @@ export default class Canvas extends React.Component {
         if (!mobile) this.props.setCursor('grabbing')
         break
       case 'tool':
-        this.drawingPath = new this.props.Tool(this.pz, this.props.connection, this.props.strokeSize).startPoint(x, y)
+        this.drawingPath = new this.props.Tool(this.pz, this.props.connection, this.props.strokeSize, this.props.color).startPoint(x, y)
         break
       default:
         break
