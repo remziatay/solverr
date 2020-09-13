@@ -185,7 +185,7 @@ export default class Canvas extends React.Component {
     canvas.addEventListener('pointerup', this.releasePointer)
 
     window.addEventListener('resize', this.resize)
-    matchMedia('(resolution: 0dppx)').addListener(this.resize)
+    matchMedia('(resolution: 0dppx)').addEventListener('change', this.resize)
 
     this.props.setPZ(this.pz)
 

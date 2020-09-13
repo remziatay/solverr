@@ -39,16 +39,20 @@
   margin-left: auto;
 }
 
+.toggle-button:focus {
+  outline: none;
+}
+
 .arrow {
   border: solid black;
   border-width: 0 3px 3px 0;
   display: inline-block;
   padding: 3px;
-  transform: rotate(135deg) translateX(-1.5px);
+  transform: translateX(1.5px) rotate(135deg);
 }
 
 .open .arrow {
-  transform: rotate(-45deg) translateX(1.5px);
+  transform: translateX(-1.5px) rotate(-45deg);
 }
 
 @media (orientation: portrait) {
@@ -72,10 +76,10 @@
   }
 
   .arrow {
-    transform: rotate(-135deg);
+    transform: translateY(1.5px) rotate(-135deg);
   }
 
   .open .arrow {
-    transform: rotate(45deg);
+    transform: translateY(-1.5px) rotate(45deg);
   }
 }
