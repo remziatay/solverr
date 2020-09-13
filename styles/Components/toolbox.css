@@ -1,0 +1,81 @@
+#toolbox {
+  position: relative;
+  flex: 0 1 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  background-color: var(--tertiary-color);
+  border-radius: 0.1em;
+  gap: 0.2em;
+  padding: 0.3em;
+}
+
+.tool-button {
+  flex: 1 1 0;
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 0.25em;
+  padding: 0.2em 1em;
+}
+
+#prop-box {
+  display: flex;
+  flex-flow: column;
+  gap: 2px;
+  position: absolute;
+  background-color: var(--tertiary-color);
+  border-radius: 0.25em;
+  right: calc(100% + 1px);
+  top: 0;
+  padding: 0.2em 0.4em;
+}
+
+.toggle-button {
+  display: flex;
+  background: none;
+  border: none;
+  padding: 3px;
+  margin-left: auto;
+}
+
+.arrow {
+  border: solid black;
+  border-width: 0 3px 3px 0;
+  display: inline-block;
+  padding: 3px;
+  transform: rotate(135deg) translateX(-1.5px);
+}
+
+.open .arrow {
+  transform: rotate(-45deg) translateX(1.5px);
+}
+
+@media (orientation: portrait) {
+  #toolbox {
+    flex-flow: row wrap;
+  }
+
+  .tool-button {
+    padding: 0.8em;
+  }
+
+  #prop-box {
+    right: initial;
+    top: initial;
+    right: 0;
+    bottom: calc(100% + 1px);
+  }
+
+  .toggle-button {
+    order: 10;
+  }
+
+  .arrow {
+    transform: rotate(-135deg);
+  }
+
+  .open .arrow {
+    transform: rotate(45deg);
+  }
+}

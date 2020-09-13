@@ -10,12 +10,14 @@ import { PZCircle } from '../Tools/PZCircle'
 import ToolButton from './ToolButton'
 import { CircleContextMenu } from '../CircleContextMenu'
 import { PZEraser } from '../Tools/PZEraser'
+import { debounce } from '../util'
 
 export default class CanvasContainer extends React.Component {
   state = {
     mode: 'pan',
     Tool: undefined,
     strokeSize: 10,
+    color: '#000',
     cursor: 'grab'
   }
 
@@ -33,19 +35,26 @@ export default class CanvasContainer extends React.Component {
     tool => <ToolButton key={tool} name={tool} click={() => this.setTool(tool)}/>
   )
 
-  changeStrokeSize = change => {
+  changeStrokeSize = (change = 0, exact = 0) => {
     this.setState(state => {
-      const strokeSize = Math.min(Math.max(state.strokeSize + change, 1), 128)
+      const strokeSize = Math.min(Math.max(exact || (state.strokeSize + change), 1), 128)
       if (change && strokeSize === state.strokeSize) return
       const changes = { strokeSize }
+      if (state.mode === 'pan') return changes
       if (strokeSize < 5) changes.cursor = 'crosshair'
       else {
-        const svg = `<svg width="${strokeSize}" height="${strokeSize}" xmlns="http://www.w3.org/2000/svg"><circle r="${strokeSize / 2 - 1}" cy="${strokeSize / 2}" cx="${strokeSize / 2}" stroke-width="1.5" stroke="black" fill="none"/></svg>`
+        const svg = `<svg width="${strokeSize}" height="${strokeSize}" xmlns="http://www.w3.org/2000/svg"><circle r="${strokeSize / 2 - 1}" cy="${strokeSize / 2}" cx="${strokeSize / 2}" stroke-width="1.5" stroke="${state.color.replace('#', '%23')}" fill="none"/></svg>`
         changes.cursor = `url('data:image/svg+xml;utf8,${svg}') ${strokeSize / 2} ${strokeSize / 2}, auto`
       }
       return changes
     })
   }
+
+  setStrokeSize = this.changeStrokeSize.bind(this, 0)
+
+  changeColor = color => this.setState({ color }, this.changeStrokeSize)
+
+  setColor = debounce(this.changeColor, 250)
 
   setCursor = cursor => this.setState({ cursor })
 
@@ -54,8 +63,7 @@ export default class CanvasContainer extends React.Component {
       this.setState({ mode: 'pan', cursor: 'grab' })
       return
     }
-    this.changeStrokeSize(0)
-    this.setState({ mode: 'tool', Tool: this.classes[tool.toLowerCase()] })
+    this.setState({ mode: 'tool', Tool: this.classes[tool.toLowerCase()] }, this.changeStrokeSize)
   }
 
   constructor (props) {
@@ -87,7 +95,13 @@ export default class CanvasContainer extends React.Component {
           changeStrokeSize = {this.changeStrokeSize}
           menu = {this.menu}
         />
-        <ToolBox buttons={this.toolButtons}/>
+        <ToolBox
+          buttons={this.toolButtons}
+          strokeSize={this.state.strokeSize}
+          setStrokeSize={this.setStrokeSize}
+          color={this.state.color}
+          setColor={this.setColor}
+        />
       </main>
     )
   }
