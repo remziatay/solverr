@@ -1,7 +1,7 @@
 import React from 'react'
 import Peer from 'peerjs'
 import Header from './Components/Header'
-import { BrowserRouter, Route, Switch } from 'react-router-dom'
+import { BrowserRouter, Route } from 'react-router-dom'
 import HomePage from './Pages/HomePage'
 
 class App extends React.Component {
@@ -51,27 +51,24 @@ class App extends React.Component {
         <BrowserRouter>
           <Header />
 
-          <Switch>
-            <Route path='/about'>
+          <Route path='/'>
+            <HomePage
+              statusText={this.state.statusText}
+              name1={this.props.name1}
+              name2={this.props.name2}
+              share={this.state.shareLink}
+              ready={this.state.ready}
+              connection={this.state.conn}
+            />
+          </Route>
+
+          <Route path='/about'>
               ABOUT
-            </Route>
+          </Route>
 
-            <Route path='/contact'>
+          <Route path='/contact'>
               Contact
-            </Route>
-
-            <Route path='/' exact>
-              <HomePage
-                statusText={this.state.statusText}
-                name1={this.props.name1}
-                name2={this.props.name2}
-                share={this.state.shareLink}
-                ready={this.state.ready}
-                connection={this.state.conn}
-
-              />
-            </Route>
-          </Switch>
+          </Route>
 
         </BrowserRouter>
       </>

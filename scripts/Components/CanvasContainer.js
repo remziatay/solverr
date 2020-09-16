@@ -80,9 +80,14 @@ export default class CanvasContainer extends React.Component {
     this.tools.forEach(tool => this.menu.addButton(tool, () => this.setTool(tool)))
   }
 
+  shouldComponentUpdate (oldProps) {
+    return this.props.show || (oldProps.show !== this.props.show)
+  }
+
   render () {
+    const style = this.props.show ? {} : { position: 'fixed', visibility: 'hidden' }
     return (
-      <main id="canvas-container">
+      <main id="canvas-container" style={style}>
         <Canvas connection={this.props.connection}
           setPZ={this.props.setPZ}
           image={this.props.image}

@@ -155,9 +155,13 @@ export default class Canvas extends React.Component {
 
   resize = () => {
     const canvas = this.canvasRef.current
+    const parent = canvas.parentElement
+    const { position, visibility } = parent.style
+    parent.style.position = parent.style.visibility = ''
     const { marginRight, marginBottom } = canvas.style
     canvas.style.marginRight = canvas.style.marginBottom = ''
     const rect = canvas.getBoundingClientRect()
+    Object.assign(parent.style, { position, visibility })
     Object.assign(canvas.style, { marginRight, marginBottom })
     const width = Math.round(rect.width * window.devicePixelRatio)
     const height = Math.round(rect.height * window.devicePixelRatio)
