@@ -154,12 +154,12 @@
   user-select: none;
 }
 
-.navbar-item:not(.active):hover,
-.navbar-item:not(.active):focus {
+.navbar-link:not(.active):hover,
+.navbar-link:not(.active):focus {
   border-radius: 0.25em;
   background-color: var(--primary-color);
 }
 
-.navbar-item.active {
+.navbar-link.active {
   filter: grayscale();
 }

@@ -6,8 +6,8 @@ export default class Header extends React.Component {
   state = {
     navs: [
       { text: 'Home', link: '/' },
-      { text: 'About', link: '/' },
-      { text: 'Contact', link: '/' }
+      { text: 'About', link: '/about' },
+      { text: 'Contact', link: '/contact' }
     ],
     active: this.props.active || 0,
     open: false

@@ -200,6 +200,8 @@ export default class Canvas extends React.Component {
     canvas.removeEventListener('touchstart', this.preventDef)
     canvas.removeEventListener('pointerdown', this.capturePointer)
     canvas.removeEventListener('pointerup', this.releasePointer)
+    window.removeEventListener('resize', this.resize)
+    matchMedia('(resolution: 0dppx)').removeEventListener('change', this.resize)
   }
 
   ondata = data => {
