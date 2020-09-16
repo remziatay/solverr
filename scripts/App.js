@@ -3,6 +3,8 @@ import Peer from 'peerjs'
 import Header from './Components/Header'
 import { BrowserRouter, Route } from 'react-router-dom'
 import HomePage from './Pages/HomePage'
+import AboutPage from './Pages/AboutPage'
+import ContactPage from './Pages/ContactPage'
 
 class App extends React.Component {
   state = {
@@ -63,11 +65,11 @@ class App extends React.Component {
           </Route>
 
           <Route path='/about'>
-              ABOUT
+            <AboutPage/>
           </Route>
 
           <Route path='/contact'>
-              Contact
+            <ContactPage/>
           </Route>
 
         </BrowserRouter>
