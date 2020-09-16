@@ -48,7 +48,7 @@ class App extends React.Component {
   render () {
     return (
       <>
-        <BrowserRouter>
+        <BrowserRouter basename={process.env.basename}>
           <Header />
 
           <Route path='/'>

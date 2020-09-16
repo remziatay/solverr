@@ -1,6 +1,7 @@
 import '../../styles/Components/header.css'
 import React, { createRef } from 'react'
 import NavLink from './NavLink'
+import { Link } from 'react-router-dom'
 
 export default class Header extends React.Component {
   state = {
@@ -39,7 +40,7 @@ export default class Header extends React.Component {
     return (
       <header id="navbar" className={this.state.open ? 'open' : ''}>
         <nav className="navbar-container">
-          <a href="/" className="home-link">Solverr</a>
+          <Link to="/" className="home-link">Solverr</Link>
           <button ref={this.toggleRef} onClick={this.buttonClick} aria-label="Navigation Menu" className="navbar-toggle">
             <span className="icon-bar"></span>
             <span className="icon-bar"></span>
