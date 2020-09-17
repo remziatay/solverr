@@ -23,3 +23,14 @@ body {
 .generic-hover:focus {
   filter: brightness(130%);
 }
+
+.info-card {
+  width: 90%;
+  margin: 2em 0;
+  padding: 2em;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.info-card > h1 {
+  margin-bottom: 0.5em;
+}
